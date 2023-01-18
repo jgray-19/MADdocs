@@ -12,7 +12,7 @@ The easiest way to shortly describe these choices is to cite their authors.
 
 *"Lua is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming, object-oriented programming, functional programming, data-driven programming, and data description. Lua combines simple procedural syntax with powerful data description constructs based on associative arrays and extensible semantics. Lua is dynamically typed and has automatic memory management with incremental garbage collection, making it ideal for configuration, scripting, and rapid prototyping."* [#f1]_ 
 
-*"LuaJIT\index{LuaJIT} is widely considered to be one of the fastest dynamic language implementations. It has outperformed other dynamic languages on many cross-language benchmarks since its first release in 2005 --- often by a substantial margin --- and breaks into the performance range traditionally reserved for offline, static language compilers."* [#f2]_ 
+*"LuaJIT is widely considered to be one of the fastest dynamic language implementations. It has outperformed other dynamic languages on many cross-language benchmarks since its first release in 2005 --- often by a substantial margin --- and breaks into the performance range traditionally reserved for offline, static language compilers."* [#f2]_ 
 
 Lua and LuaJIT are free open-source software, distributed under the very liberal MIT license.
 
