@@ -9,6 +9,7 @@ LANGUAGE
    /intro.rst
    /script.rst
    /comparing.rst 
+   /primer.rst
    /objects.rst
    /beam.rst
    /beta0.rst
