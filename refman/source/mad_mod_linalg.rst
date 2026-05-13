@@ -842,9 +842,9 @@ Solvers and Decompositions
 
    Return the real or complex :math:`[ n \times p ]` matrix :math:`x` as the minimum-norm solution of the linear least square problem :math:`\min \| A x - B \|` where :math:`A` is the real or complex :math:`[ m \times n ]` matrix :var:`mat` and :math:`B` is a :math:`[ m \times p ]` matrix :var:`b` of the same type as :var:`mat`, using LU, QR or LQ factorisation depending on the shape of the system. The conditional number :var:`rcond` is used by the solver to determine the effective rank of non-square system. This method also returns the rank of the system. Default: :expr:`rcond_ = eps`.
 
-.. function:: mat:ssolve (b, rcond_)
+.. function:: mat:ssolve (b, rcond_, ncond_)
 
-   Return the real or complex :math:`[ n \times p ]` matrix :math:`x` as the minimum-norm solution of the linear least square problem :math:`\min \| A x - B \|` where :math:`A` is the real or complex :math:`[ m \times n ]` matrix :var:`mat` and :math:`B` is a :math:`[ m \times p ]` matrix :var:`b` of the same type as :var:`mat`, using SVD factorisation. The conditional number :var:`rcond` is used by the solver to determine the effective rank of the system. This method also returns the rank of the system followed by the real :math:`[ \min(m,n) \times 1 ]` vector of singluar values. Default: :expr:`rcond_ = eps`.
+   Return the real or complex :math:`[ n \times p ]` matrix :math:`x` as the minimum :math:`L_2`-norm solution of the linear least square problem :math:`\min \| A x - B \|` where :math:`A` is the real or complex :math:`[ m \times n ]` matrix :var:`mat` and :math:`B` is a :math:`[ m \times p ]` matrix :var:`b` of the same type as :var:`mat`, using SVD factorisation. The conditional number :var:`rcond` is used by the solver to determine the effective rank of the system. If :var:`ncond` is non-zero then :func:`mat:pinv()` is used to solve the system. This method also returns the rank of the system followed by the real :math:`[ \min(m,n) \times 1 ]` vector of singluar values. Default: :expr:`rcond_ = eps`, :expr:`ncond_ = 0`.
 
 .. function:: mat:gsolve (b, c, d)
 
