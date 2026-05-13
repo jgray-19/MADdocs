@@ -9,7 +9,6 @@ All examples run from the repository root and use the PSB sequence shipped with
 this documentation:
 
 * :file:`doc_sequences/psb3_saved.seq`
-* :file:`doc_sequences/psb3_saved.mad`
 
 ----
 

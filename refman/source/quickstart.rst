@@ -44,6 +44,10 @@ This gives you a MAD-NG sequence object that can be used directly by
 
 For more detail, see :doc:`mad_gen_madx`.
 
+If you want a concrete starting point from this repo, look in :file:`doc_sequences/`
+for saved sequences and translated inputs (for example :file:`sps.seq` /
+:file:`sps.mad`).
+
 3. Attach a Beam
 ----------------
 

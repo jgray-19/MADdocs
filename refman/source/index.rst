@@ -63,6 +63,15 @@ For quick syntax references and comparisons with other languages:
 * `MAD-NG Language Cheatsheet <https://methodicalacceleratordesign.github.io/MAD-NG/madng-cheatsheet.html>`_ - Compact reference for MAD-NG syntax, operators, data types, and common pitfalls.
 * `MAD-NG vs MATLAB/Python/Julia Comparison <https://methodicalacceleratordesign.github.io/MAD-NG/madng-comparison-cheatsheet.html>`_ - Side-by-side syntax comparisons for vectors, matrices, operations, and programming constructs.
 
+Repository Assets
+=================
+
+This repo also ships a few local assets that examples and docs may reference:
+
+* :file:`doc_sequences/` - a small set of saved MAD-X sequences and translated :literal:`.mad` inputs (for example SPS and PSB3).
+* :file:`verified_examples/` - minimal examples used by the manual via :literalinclude.
+* :file:`refman/source/` - the Sphinx manual sources themselves.
+
 Structure
 =========
 
