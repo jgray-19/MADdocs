@@ -1,0 +1,32 @@
+local beam, twiss in MAD
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+local tw = twiss { sequence=psb3 }
+
+-- Write selected columns to a TFS file.
+local cols = {"name", "s", "beta11", "beta22", "mu1", "mu2", "dx", "dy", "x", "y"}
+tw:write("twiss_out", cols)
+
+-- Scalar summary values are fields on the table object.
+print("q1=", tw.q1, " q2=", tw.q2)
+print("dq1=", tw.dq1, " dq2=", tw.dq2)
+
+-- Column data is accessed by column name.
+local s_vals    = tw["s"]
+local beta_vals = tw["beta11"]
+assert(#s_vals == #beta_vals, "length mismatch")
+local max_b = beta_vals[1]
+for i = 2, #beta_vals do
+  if beta_vals[i] > max_b then max_b = beta_vals[i] end
+end
+print("nrows=", #tw, " max_beta11=", max_b)
+
+-- Individual rows can be indexed numerically.
+local row1 = tw[1]
+print("first element name=", row1.name, " s=", row1.s)

@@ -8,53 +8,82 @@ The :literal:`mtable` object is the *root object* of the TFS tables that store i
 
 The :literal:`mtable` module extends the :doc:`typeid <mad_mod_types>` module with the :func:`is_mtable` function, which returns :const:`true` if its argument is a :literal:`mtable` object, :const:`false` otherwise.
 
+Synopsis
+--------
+
+.. code-block:: mad
+   :caption: Base mtable defaults.
+
+   local mtable in MAD
+
+   tbl = mtable {
+     type     = 'user',
+     origin   = "MAD <version> <os> <arch>",
+     date     = nil,
+     time     = nil,
+     header   = {'name', 'type', 'origin', 'date', 'time', 'refcol'},
+     column   = nil,
+     refcol   = nil,
+     novector = nil,
+     reserve  = 100,
+   }
+
 Attributes
 ----------
 
 The :literal:`mtable` object provides the following attributes:
 
-**type**
-	 A *string* specifying the type of the mtable (often) set to the name of the command that created it, like :literal:`survey`, :var:`track` or :var:`twiss`. (default: :literal:`'user'`).
+.. list-table::
+   :widths: 16 64 20
+   :header-rows: 1
 
-**title**
-	 A *string* specifying the title of the mtable when one is attached by the creator. Commands may set it explicitly, but it is not part of the base mtable defaults.
+   * - Attribute
+     - Description
+     - Default
+   * - :literal:`type`
+     - Type of the mtable, often set to the name of the command that created it (for example :literal:`survey`, :literal:`track`, :literal:`twiss`).
+     - :literal:`'user'`
+   * - :literal:`title`
+     - Optional title when attached by the creator.
+     - unset
+   * - :literal:`origin`
+     - Origin string.
+     - :literal:`"MAD version os arch"`
+   * - :literal:`date`
+     - Creation date string.
+     - :literal:`"day/month/year"`
+   * - :literal:`time`
+     - Creation time string.
+     - :literal:`"hour:min:sec"`
+   * - :literal:`refcol`
+     - Name of the reference column used to build the dictionary and mangle values with counts.
+     - :const:`nil`
+   * - :literal:`header`
+     - Augmented attribute names (and order) used by default for the header when writing to files.
+     - :literal:`{'name', 'type', 'origin', 'date', 'time', 'refcol'}`
+   * - :literal:`column`
+     - Augmented column names (and order) used by default when writing columns to files.
+     - :const:`nil`
+   * - :literal:`novector`
+     - Disable numeric-column vector specialization on second-row insertion (:literal:`novector==true`), or provide a list of column names to exclude from specialization.
+     - :const:`nil`
+   * - :literal:`reserve`
+     - Estimated maximum number of rows; table grows as needed.
+     - :literal:`100`
+   * - :literal:`__dat`
+     - Private data table (read-only; do not use).
+     - internal
+   * - :literal:`__seq`
+     - Sequence attached by :literal:`survey` / :literal:`track` used by element-reference methods (read-only; do not use).
+     - :const:`nil`
+   * - :literal:`__cycle`
+     - Reference to row registered by :literal:`:cycle` (read-only; do not use).
+     - :const:`nil`
 
-**origin**
-	 A *string* specifying the origin of the mtable. (default: :literal:`"MAD version os arch"`).
-
-**date**
-	 A *string* specifying the date of creation of the mtable. (default: :literal:`"day/month/year"`).
-
-**time**
-	 A *string* specifying the time of creation of the mtable. (default: :literal:`"hour:min:sec"`).
-
-**refcol**
-	 A *string* specifying the name of the reference column used to build the dictionary of the mtable, and to mangle values with counts. (default: :const:`nil`).
-
-**header**
-	 A *list* specifying the augmented attributes names (and their order) used by default for the header when writing the mtable to files. Augmented meaning that the *list* is concatenated to the *list* held by the parent mtable during initialization. 
-	 (default: :literal:`{'name', 'type', 'origin', 'date', 'time', 'refcol'}`).
-
-**column**
-	 A *list* specifying the augmented columns names (and their order) used by default for the columns when writing the mtable to files. Augmented meaning that the *list* is concatenated to the *list* held by the parent mtable during initialization. (default: :const:`nil`).
-
-**novector**
-	 A *logical* specifying to not convert (:literal:`novector == true`) columns containing only numbers to vectors during the insertion of the second row. The attribute can also be a *list* specifying the columns names to remove from the specialization. If the *list* is empty or :literal:`novector ~= true`, all numeric columns will be converted to vectors, and support all methods and operations from the :doc:`linear algebra <mad_mod_linalg>` module. (default: :const:`nil`).
-
-**reserve**
-	 A *number* specifying an estimate of the maximum number of rows stored in the mtable. If the value is underestimated, the mtable will still expand on need. (default: :literal:`100`).
-
-
-**Warning**: the following private and read-only attributes are present in all mtables and should *never be used, set or changed*; breaking this rule would lead to an *undefined behavior*:
-
-**__dat**
-	 A *table* containing all the private data of mtables.
-
-**__seq**
-	 A *sequence* attached to the mtable by the :literal:`survey` and :var:`track` commands and used by the methods receiving a *reference* to an element as argument. (default: :const:`nil`).
-
-**__cycle**
-	 A *reference* to the row registered with the :literal:`:cycle` method. (default: :const:`nil`).
+.. important::
+   The private attributes :literal:`__dat`, :literal:`__seq`, and :literal:`__cycle`
+   are present in all mtables and should never be set or modified; doing so leads
+   to undefined behavior.
 
 
 Methods
@@ -223,7 +252,7 @@ The :literal:`mtable` object provides the following metamethods:
 	A *metamethod*	:literal:`(key, val)` called by the assignment operator :literal:`[key]=val` to create new attributes for the pairs (*key*, *value*). If *key* is a *number* or a value specifying a row in the reference column or a *string* specifying a column name, the following error is raised:
 
 	.. code-block::
-		
+
 		"invalid mtable write access (use 'set' methods)"
 
 
@@ -250,10 +279,10 @@ Some attributes are considered during the creation by the *metamethod* :literal:
 The following example shows how to create a mtable form a *list* of column names add rows:
 
 .. code-block::
-	
+
 	local mtable in MAD
 	local tbl = mtable 'mytable' {
-	
+
 	   {'name'}, 'x', 'y' } -- column 'name' is the refcol
 	  + { 'p11', 1.1, 1.2 }
 	  + { 'p12', 2.1, 2.2 }
@@ -304,7 +333,7 @@ The returned *iterable* is in practice a proxy, i.e. a fake intermediate object 
 The following example shows how to access to the rows through indexing and the *iterable*:
 
 .. code-block::
-	
+
 	local mtable in MAD
 	local tbl = mtable { {'name'}, 'x', 'y' } -- column 'name' is the refcol
 	                   + { 'p11', 1.1, 1.2 }
@@ -313,11 +342,11 @@ The following example shows how to access to the rows through indexing and the *
 	                   + { 'p11', 3.1, 4.2 }
 	print(tbl[ 1].y) -- display: 1.2
 	print(tbl[-1].y) -- display: 4.2
-	
+
 	print(#tbl.p11, tbl.p12.y, tbl.p11[2].y)            -- display: 2 2.2 4.2
 	for _,r in ipairs(tbl.p11) do io.write(r.x," ") end -- display: 1.1 3.1
 	for _,v in ipairs(tbl.p12) do io.write(v,  " ") end -- display: 'p12' 2.1 2.2
-	
+
 	-- print name of point with name p11 in absolute and relative to p13.
 	print(tbl:name_of(4))       -- display: p11[2]  (2nd p11 from start)
 	print(tbl:name_of(1, -2))   -- display: p11{-1} (1st p11 before p13)
@@ -336,14 +365,14 @@ The method :literal:`:foreach` uses the iterator returned by :literal:`:iter` wi
 The following example shows how to access to the rows with the :literal:`:foreach` method:
 
 .. code-block::
-	
+
 	local mtable in MAD
 	local tbl = mtable { {'name'}, 'x', 'y' }
 	                   + { 'p11', 1.1, 1.2 }
 	                   + { 'p12', 2.1, 2.2 }
 	                   + { 'p13', 2.1, 3.2 }
 	                   + { 'p11', 3.1, 4.2 }
-	
+
 	local act = \r -> print(r.name, r.y)
 	tbl:foreach(act, {-2, 2, nil, -1})
 	-- display:  p13   3.2
@@ -377,11 +406,11 @@ Creating a MTable
 The following example shows how the :var:`track` command, i.e. :literal:`self` hereafter, creates its MTable:
 
 .. code-block::
-	
+
 	local header = { -- extra attributes saved in track headers
 	  'direction', 'observe', 'implicit', 'misalign',
 	  'radiate', 'particle', 'energy', 'deltap', 'lost' }
-	
+
 	local function make_mtable (self, range)
 	  local range, nturn, dir, observe, reserve, implicit, misalign, radiate, taper,
 	        deltap, savemap in self
@@ -390,7 +419,7 @@ The following example shows how the :var:`track` command, i.e. :literal:`self` h
 	  local par, nrj = beam.particle, beam.energy
 	  local nrow = reserve > 0 and reserve or
 	               min(1e5, max(1e2, sequ:length_of(range, nturn, dir)))
-	
+
 	  return mtable(sequ.name, { -- keep column order!
 	    type='track', header=header,
 	    direction=dir, observe=observe, implicit=implicit, misalign=misalign,
@@ -407,10 +436,10 @@ Extending a MTable
 The following example shows how to extend the MTable created by a :var:`twiss` command with the elements tilt, angle and integrated strengths from the attached sequence:
 
 .. code-block::
-	
+
 	-- The prelude creating the sequence seq is omitted.
 	local tws = twiss { sequence=seq, method=4, cofind=true }
-	
+
 	local is_integer in MAD.typeid
 	tws:addcol('angle', \ri => -- add angle column
 	      local idx = tws[ri].eidx
@@ -418,7 +447,7 @@ The following example shows how to extend the MTable created by a :var:`twiss` c
 	   :addcol('tilt', \ri => -- add tilt column
 	      local idx = tws[ri].eidx
 	      return is_integer(idx) and tws.__seq[idx].tilt or 0 end)
-	
+
 	for i=1,6 do -- add kil and kisl columns
 	tws:addcol('k'..i-1..'l', \ri =>
 	      local idx = tws[ri].eidx
@@ -433,26 +462,26 @@ The following example shows how to extend the MTable created by a :var:`twiss` c
 	      return (elm['k'..i-1..'s'] or 0)*elm.l + ((elm.ksl or {})[i] or 0)
 	    end)
 	end
-	
+
 	local cols = {'name', 'kind', 's', 'l', 'angle', 'tilt',
 	    'x', 'px', 'y', 'py', 't', 'pt',
 	    'beta11', 'beta22', 'alfa11', 'alfa22', 'mu1', 'mu2', 'dx', 'ddx',
 	    'k1l', 'k2l', 'k3l', 'k4l', 'k1sl', 'k2sl', 'k3sl', 'k4sl'}
-	
+
 	tws:write("twiss", cols) -- write header and columns to file twiss.tfs
 
 Hopefully, the :doc:`physics <mad_mod_gphys>` module provides the *function* :literal:`melmcol(mtbl, cols)` to achieve the same task easily:
 
 .. code-block::
-	
+
 	-- The prelude creating the sequence seq is omitted.
 	local tws = twiss { sequence=seq, method=4, cofind=true }
-	
+
 	-- Add element properties as columns
 	local melmcol in MAD.gphys
 	local melmcol(tws, {'angle', 'tilt', 'k1l' , 'k2l' , 'k3l' , 'k4l',
 	                                     'k1sl', 'k2sl', 'k3sl', 'k4sl'})
-	
+
 	-- write TFS table
 	tws:write("twiss", {
 	    'name', 'kind', 's', 'l', 'angle', 'tilt',

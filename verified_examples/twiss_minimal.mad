@@ -1,0 +1,19 @@
+local beam, twiss in MAD
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+local tw = twiss { sequence=psb3 }
+
+assert(tw.q1,        "missing q1")
+assert(tw.q2,        "missing q2")
+assert(tw["beta11"], "missing beta11 column")
+assert(tw["beta22"], "missing beta22 column")
+
+tw:write("twiss_minimal", {"name", "s", "beta11", "beta22", "mu1", "mu2", "dx", "dy"})
+
+print("twiss: q1=", tw.q1, " q2=", tw.q2)

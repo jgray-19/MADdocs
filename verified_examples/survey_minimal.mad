@@ -1,0 +1,20 @@
+local beam, survey in MAD
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+local srv = survey { sequence=psb3 }
+
+assert(srv["x"],   "missing x column")
+assert(srv["y"],   "missing y column")
+assert(srv["z"],   "missing z column")
+assert(srv["theta"], "missing theta column")
+assert(srv["phi"],   "missing phi column")
+
+srv:write("survey_minimal", {"name", "s", "x", "y", "z", "theta", "phi", "psi", "angle"})
+
+print("survey: nrows=", #srv, " total_length=", srv.s[#srv])

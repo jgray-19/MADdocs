@@ -1,0 +1,27 @@
+local beam, twiss, match in MAD
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+-- Match horizontal and vertical tunes by adjusting the two PSB quadrupole families.
+local status, fmin, ncall = match {
+  command    := twiss { sequence=psb3 },
+  variables  = { rtol=1e-6,
+                 { var="MADX.kbrqf" },
+                 { var="MADX.kbrqd" } },
+  equalities = { { expr=\t -> t.q1 - 4.19, name="q1" },
+                 { expr=\t -> t.q2 - 4.21, name="q2" } },
+  objective  = { fmin=1e-10, broyden=true },
+  maxcall    = 100,
+  info       = 1,
+}
+
+assert(status == "FMIN" or status == "converged",
+       "match did not converge: "..tostring(status))
+
+local tw = twiss { sequence=psb3 }
+print("matched: q1=", tw.q1, " q2=", tw.q2, " status=", status, " ncall=", ncall)

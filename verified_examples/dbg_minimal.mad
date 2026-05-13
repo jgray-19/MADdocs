@@ -1,0 +1,25 @@
+local dbg in MAD
+
+dbg.use_color(false)
+dbg.auto_where = 1
+
+local scripted = { "l", "p x", "c" }
+local idx = 0
+local old_read = dbg.read
+
+dbg.read = function(prompt)
+  idx = idx + 1
+  local cmd = scripted[idx] or "c"
+  io.stderr:write(prompt, cmd, "\n")
+  return cmd
+end
+
+local function probe()
+  local x = 42
+  dbg(false, 0, "verified_examples/dbg_minimal.mad")
+  return x
+end
+
+assert(probe() == 42, "unexpected debugger result")
+
+dbg.read = old_read

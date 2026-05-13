@@ -243,3 +243,4 @@ TSWLatexianTemp*
 
 # The html and pdf output from sphinx
 refman/build/*
+__pycache__/

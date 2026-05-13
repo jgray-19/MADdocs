@@ -4,9 +4,11 @@ Twiss
 
 The :var:`twiss` command provides a simple interface to compute the optical functions around an orbit on top of the :var:`track` command, and the :var:`cofind` command if the search for closed orbits is requested.
 
-Command synopsis
-----------------
-.. _sec.twiss.synop:
+In practical advanced workflows, :var:`twiss` is also used as the main entry
+point for derivative-driven optics and resonance-driving-term calculations
+through :literal:`X0`, :literal:`trkopt`, and :literal:`trkrdt`. See
+:doc:`parametric_optics_and_rdts`.
+
 
 The :var:`twiss` command format is summarized in :numref:`fig-twiss-synop`, including the default setup of the attributes. Most of these attributes are set to :const:`nil` by default, meaning that :var:`twiss` relies on the :var:`track` and the :var:`cofind` commands defaults.
 
@@ -72,234 +74,298 @@ The :var:`twiss` command supports the following attributes:
 
 .. _twiss.attr:
 
-**sequence**
-	The *sequence* to track. (no default, required).
-
-	Example: :expr:`sequence = lhcb1`.
-
-**beam**
-	The reference *beam* for the tracking. If no beam is provided, the command looks for a beam attached to the sequence, i.e. the attribute :literal:`seq.beam` . [#f1]_ (default: :const:`nil`).
-
-	Example: :expr:`beam = beam 'lhcbeam' { beam-attributes }`.
-
-**range**
-	A *range* specifying the span of the sequence track. If no range is provided, the command looks for a range attached to the sequence, i.e. the attribute :attr:`seq.range`. (default: :const:`nil`).
-
-	Example: :expr:`range = "S.DS.L8.B1/E.DS.R8.B1"`.
-
-**dir**
-	The :math:`s`-direction of the tracking: :const:`1` forward, :const:`-1` backward. (default: :const:`nil`).
-
-	Example: :expr:`dir = -1`.
-
-**s0**
-	A *number* specifying the initial :math:`s`-position offset. (default: :const:`nil`).
-
-	Example: :expr:`s0 = 5000`.
-
-**X0**
-	A *mappable* (or a list of *mappable*) specifying initial coordinates :literal:`{x,px,y,py, t,pt}`, damap, or beta0 block for each tracked object, i.e. particle or damap. The beta0 blocks are converted to damaps, while the coordinates are converted to damaps only if :literal:`mapdef` is specified, but both will use :literal:`mapdef` to setup the damap constructor. A closed orbit will be automatically searched for damaps built from coordinates. Each tracked object may also contain a :var:`beam` to override the reference beam, and a *logical* :literal:`nosave` to discard this object from being saved in the mtable. (default: :const:`nil`).
-
-	Example: :expr:`X0 = { x=1e-3, px=-1e-5 }`.
-
-**O0**
-	A *mappable* specifying initial coordinates :literal:`{x,px,y,py,t,pt}` of the reference orbit around which X0 definitions take place. If it has the attribute :literal:`cofind == true`, it will be used as an initial guess to search for the reference closed orbit. (default: :const:`nil`).
-
-	Example: :expr:`O0 = { x=1e-4, px=-2e-5, y=-2e-4, py=1e-5 }`.
-
-**deltap**
-	A *number* (or list of *number*) specifying the initial :math:`\delta_p` to convert (using the beam) and add to the :literal:`pt` of each tracked particle or damap. (default: :const:`nil`).
-
-	Example: :expr:`s0 = 5000`.
-
-**chrom**
-	A *logical* specifying to calculate the chromatic functions by finite different using an extra :math:`\delta_p=` :const:`1e-6`. (default: :const:`false`).
-
-	Example: :expr:`chrom = true`.
-
-**coupling**
-	A *logical* specifying to calculate the optical functions for coupling terms in the normalized forms. (default: :const:`false`).
-
-	Example: :expr:`coupling = true`.
-
-**trkopt**
-	A *list* of optical-function names requesting additional parametric optics columns to be tracked and stored in the output table. (default: :const:`false`).
-
-	Example: :expr:`trkopt = {'beta11_01', 'beta22_10'}`.
-
-**trkrdt**
-	A *list* of resonance-driving-term names requesting additional RDT columns to be tracked and stored in the output table. Each requested name must start with :literal:`'f'`. (default: :const:`false`).
-
-	Example: :expr:`trkrdt = {'f3000', 'f2100'}`.
-
-**nturn**
-	A *number* specifying the number of turn to track. (default: :const:`nil`).
-
-	Example: :expr:`nturn = 2`.
-
-**nstep**
-	A *number* specifying the number of element to track. A negative value will track all elements. (default: :const:`nil`).
-
-	Example: :expr:`nstep = 1`.
-
-**nslice**
-	A *number* specifying the number of slices or an *iterable* of increasing relative positions or a *callable* :literal:`(elm, mflw, lw)` returning one of the two previous kind of positions to track in the elements. The arguments of the callable are in order, the current element, the tracked map flow, and the length weight of the step. This attribute can be locally overridden by the element. (default: :const:`nil`).
-
-	Example: :expr:`nslice = 5`.
-
-**mapdef**
-	A *logical*, a *number*, or a *damap* specification as defined by the :doc:`DAmap <mad_mod_diffmap>` module to track DA maps instead of particles coordinates. A value of :const:`true` is equivalent to invoke the *damap* constructor with :literal:`{}` as argument. The default value :literal:`2` forces a second-order damap setup for the linear normal-form analysis. (default: :literal:`2`).
-
-	Example: :expr:`mapdef = { xy=2, pt=5 }`.
-
-**method**
-	A *number* specifying the order of integration from 1 to 8, or a *string* specifying a special method of integration. Odd orders are rounded to the next even order to select the corresponding Yoshida or Boole integration schemes. The special methods are :literal:`simple` (equiv. to :literal:`DKD` order 2), :literal:`collim` (equiv. to :literal:`MKM` order 2), and :literal:`teapot` (Teapot splitting order 2). (default: :const:`nil`).
-
-	Example: :expr:`method = 'teapot'`.
-
-**model**
-	A *string* specifying the integration model, either :literal:`'DKD'` for *Drift-Kick-Drift* thin lens integration or :literal:`'TKT'` for *Thick-Kick-Thick* thick lens integration. [#f7]_ (default: :const:`nil`)
-
-	Example: :expr:`model = 'DKD'`.
-
-**ptcmodel**
-	A *logical* selecting the tracking backend: :const:`nil` keeps the MAD-NG model, :const:`true` selects the strict PTC model, and :const:`false` selects the MAD-X-compatible model. [#f8]_ (default: :const:`nil`)
-
-	Example: :expr:`ptcmodel = true`.
-
-The attributes :literal:`secnmul`, :literal:`aperture`, :literal:`frngmax`, :literal:`nocavity`, :literal:`cmap`, :literal:`aper` and :literal:`apersel` are forwarded unchanged to the underlying :var:`track` command and therefore keep the same semantics and default handling as in :doc:`track <mad_cmd_track>`.
-
-**implicit**
-	A *logical* indicating that implicit elements must be sliced too, e.g. for smooth plotting. (default: :const:`nil`).
-
-	Example: :expr:`implicit = true`.
-
-**misalign**
-	A *logical* indicating that misalignment must be considered. (default: :const:`nil`).
-
-	Example: :expr:`misalign = true`.
-
-**fringe**
-	A *logical* indicating that fringe fields must be considered or a *number* specifying a bit mask to apply to all elements fringe flags defined by the element module. The value :const:`true` is equivalent to the bit mask , i.e. allow all elements (default) fringe fields. (default: :const:`nil`).
-
-	Example: :expr:`fringe = false`.
-
-**radiate**
-	A *logical* enabling damping radiation during the closed-orbit and one-turn-map preparation phases. Any truthy value is collapsed to the damping-only tracking mode used internally by :var:`twiss`. (default: :const:`nil`).
-
-	Example: :expr:`radiate = true`.
-
-**totalpath**
-	A *logical* indicating to use the totalpath for the fifth variable :literal:`'t'` instead of the local path. (default: :const:`nil`).
-
-	Example: :expr:`totalpath = true`.
-
-**save**
-	A *logical* specifying to create a *mtable* and record tracking information at the observation points. The :literal:`save` attribute can also be a *string* specifying saving positions in the observed elements: :literal:`"atentry"`, :literal:`"atslice"`, :literal:`"atexit"` (i.e. :const:`true`), :literal:`"atbound"` (i.e. entry and exit), :literal:`"atbody"` (i.e. slices and exit) and :literal:`"atall"`. (default: :const:`true`).
-
-	Example: :expr:`save = false`.
-
-**observe**
-	A *number* specifying the observation points to consider for recording the tracking information. A zero value will consider all elements, while a positive value will consider selected elements only, checked with method :meth:`:is_observed`, every :literal:`observe`\ :math:`>0` turns. (default: :const:`0`).
-
-	Example: :expr:`observe = 1`.
-
-**savesel**
-	A *callable* :literal:`(elm, mflw, lw, islc)` acting as a predicate on selected elements for observation, i.e. the element is discarded if the predicate returns :const:`false`. The arguments are in order, the current element, the tracked map flow, the length weight of the slice and the slice index. (default: :const:`fnil`)
-
-	Example: :expr:`savesel = \\e -> mylist[e.name] ~= nil`.
-
-**savemap**
-	A *logical* indicating to save the damap in the column :literal:`__map` of the *mtable*. (default: :const:`nil`).
-
-	Example: :expr:`savemap = true`.
-
-**saveanf**
-	A *logical* indicating to save the analysed normal form in the protected column :literal:`__nf` of the *mtable*. (default: :const:`nil`).
-
-	Example: :expr:`saveanf = true`.
-
-**atentry**
-	A *callable* :literal:`(elm, mflw, 0, -1)` invoked at element entry. The arguments are in order, the current element, the tracked map flow, zero length and the slice index :const:`-1`. (default: :const:`fnil`).
-
-	Example: :expr:`atentry = myaction`.
-
-**atslice**
-	A *callable* :literal:`(elm, mflw, lw, islc)` invoked at element slice. The arguments are in order, the current element, the tracked map flow, the length weight of the slice and the slice index. (default: :const:`fnil`).
-
-	Example: :expr:`atslice = myaction`.
-
-**atexit**
-	A *callable* :literal:`(elm, mflw, 0, -2)` invoked at element exit. The arguments are in order, the current element, the tracked map flow, zero length and the slice index . (default: :const:`fnil`).
-
-	Example: :expr:`atexit = myaction`.
-
-**ataper**
-	A *callable* :literal:`(elm, mflw, lw, islc)` invoked at element aperture checks, by default at last slice. The arguments are in order, the current element, the tracked map flow, the length weight of the slice and the slice index. If a particle or a damap hits the aperture, then its :literal:`status="lost"` and it is removed from the list of tracked items. (default: :const:`fnil`).
-
-	Example: :expr:`ataper = myaction`.
-
-**atsave**
-	A *callable* :literal:`(elm, mflw, lw, islc)` invoked at element saving steps, by default at exit. The arguments are in order, the current element, the tracked map flow, the length weight of the slice and the slice index. (default: :const:`fnil`).
-
-	Example: :expr:`atsave = myaction`.
-
-**atdebug**
-	A *callable* :literal:`(elm, mflw, lw, [msg], [...])` invoked at the entry and exit of element maps during the integration steps, i.e. within the slices. The arguments are in order, the current element, the tracked map flow, the length weight of the integration step and a *string* specifying a debugging message, e.g. :literal:`"map_name:0"` for entry and :literal:`":1"` for exit. If the level :literal:`debug` :math:`\geq 4` and :literal:`atdebug` is not specified, the default *function* :literal:`mdump` is used. In some cases, extra arguments could be passed to the method. (default: :const:`fnil`).
-
-	Example: :expr:`atdebug = myaction`.
-
-**costp**
-	A *number* specifying the relative finite-difference scale to approximate the Jacobian when damaps are disabled. If :literal:`costp == true`, the closed-orbit preparation stage falls back to the default finite-difference scale from :var:`cofind`. (default: :const:`nil`).
-
-	Example: :expr:`costp = 1e-8`.
-
-**coitr**
-	A *number* specifying the maximum number of iteration for the closed-orbit search stage. If this threshold is reached, all the remaining tracked objects are tagged as :literal:`"unstable"`. (default: :const:`nil` and inherited from :var:`cofind`).
-
-	Example: :expr:`coitr = 5`.
-
-**cotol**
-	A *number* specifying the closed orbit tolerance. If all coordinates update of a particle or a damap are smaller than :literal:`cotol`, then it is tagged as :literal:`"stable"`. (default: :const:`nil` and inherited from :var:`cofind`).
-
-	Example: :expr:`cotol = 1e-6`.
-
-**O1**
-	A *mappable* specifying the coordinates :literal:`{x,px,y,py,t,pt}` to *subtract* from the final closed-orbit coordinates. (default: :const:`nil`).
-
-	Example: :expr:`O1 = { t=100, pt=10 }`.
-
-**info**
-	A *number* specifying the information level to control the verbosity of the output on the console. (default: :const:`nil`).
-
-	Example: :expr:`info = 2`.
-
-**debug**
-	A *number* specifying the debug level to perform extra assertions and to control the verbosity of the output on the console. (default: :const:`nil`).
-
-	Example: :expr:`debug = 2`.
-
-**usrdef**
-	Any user defined data that will be attached to the tracked map flow, which is internally passed to the elements method :literal:`:track` and to their underlying maps. (default: :const:`nil`).
-
-	Example: :expr:`usrdef = { myvar=somevalue }`.
-
-**mflow**
-	A *mflow* containing the current state of a :var:`twiss` command. If a map flow is provided, all setup attributes are ignored and only the volatile fields already stored in the mflow are reused; in practice, :literal:`nstep`, :literal:`info` and :literal:`debug` are the fields refreshed by the command wrapper. (default: :const:`nil`).
-
-	Example: :expr:`mflow = mflow0`.
-
-
-The :var:`twiss` command returns the following objects in this order:
-
-**mtbl**
-	A *mtable* corresponding to the augmented TFS table of the :var:`track` command with the :var:`twiss` command columns.
-
-**mflw**
-	A *mflow* corresponding to the augmented map flow of the :var:`track` command with the :var:`twiss` command data.
-
-**eidx**
-	An optional *number* corresponding to the last tracked element index in the sequence when :literal:`nstep` was specified and stopped the command before the end of the :literal:`range`.
+**Sequence and beam**
+
+.. list-table::
+   :widths: 14 10 46 30
+   :header-rows: 1
+
+   * - Attribute
+     - Default
+     - Description
+     - Example
+   * - :literal:`sequence`
+     - *required*
+     - Sequence to analyse.
+     - ``sequence = lhcb1``
+   * - :literal:`beam`
+     - :const:`nil`
+     - Reference beam (or :literal:`seq.beam`). [#f1]_
+     - ``beam = mybeam``
+   * - :literal:`range`
+     - :const:`nil`
+     - Sub-range of the sequence (or :literal:`seq.range`).
+     - ``range = "IP1/IP5"``
+   * - :literal:`dir`
+     - :const:`nil`
+     - Tracking direction: :const:`1` forward, :const:`-1` backward.
+     - ``dir = -1``
+   * - :literal:`s0`
+     - :const:`nil`
+     - Initial :math:`s`-position offset [m].
+     - ``s0 = 5000``
+
+**Initial conditions**
+
+.. list-table::
+   :widths: 14 10 46 30
+   :header-rows: 1
+
+   * - Attribute
+     - Default
+     - Description
+     - Example
+   * - :literal:`X0`
+     - :const:`nil`
+     - Initial coordinates :literal:`{x,px,y,py,t,pt}`, damap(s), or beta0 block(s). A :var:`beam` override and :literal:`nosave=true` per object are supported.
+     - ``X0 = {x=1e-3}``
+   * - :literal:`O0`
+     - :const:`nil`
+     - Reference orbit. Set :literal:`cofind=true` on the table to search.
+     - ``O0 = {x=1e-4}``
+   * - :literal:`deltap`
+     - :const:`nil`
+     - Initial :math:`\delta_p` offset(s) added to :literal:`pt`.
+     - ``deltap = 1e-3``
+   * - :literal:`nturn`
+     - :const:`nil`
+     - Number of turns (default 1 via :var:`track`).
+     - ``nturn = 2``
+   * - :literal:`nstep`
+     - :const:`nil`
+     - Number of elements (:const:`-1` = all).
+     - ``nstep = 10``
+
+**Optics**
+
+.. list-table::
+   :widths: 14 10 46 30
+   :header-rows: 1
+
+   * - Attribute
+     - Default
+     - Description
+     - Example
+   * - :literal:`chrom`
+     - :const:`false`
+     - Compute chromatic functions by finite difference (:math:`\delta_p = 10^{-6}`).
+     - ``chrom = true``
+   * - :literal:`coupling`
+     - :const:`false`
+     - Compute coupling optical functions in normalised forms.
+     - ``coupling = true``
+   * - :literal:`trkopt`
+     - :const:`false`
+     - List of parametric optical-function names to track. See :doc:`parametric_optics_and_rdts`.
+     - ``trkopt = {'beta11_01'}``
+   * - :literal:`trkrdt`
+     - :const:`false`
+     - List of resonance driving term names (must start with :literal:`'f'`). See :doc:`parametric_optics_and_rdts`.
+     - ``trkrdt = {'f3000'}``
+   * - :literal:`mapdef`
+     - :const:`2`
+     - DA map order: :const:`2` forces second-order for normal-form analysis, :const:`true` ⇒ :literal:`{xy=1}`. See :doc:`DAmap <mad_mod_diffmap>`.
+     - ``mapdef = {xy=2, pt=5}``
+
+**Integration** (see :ref:`ch.phy.intrg`)
+
+.. list-table::
+   :widths: 14 10 46 30
+   :header-rows: 1
+
+   * - Attribute
+     - Default
+     - Description
+     - Example
+   * - :literal:`method`
+     - :const:`nil`
+     - Integration order 1–8, or named string (:literal:`'teapot'`, …). See :ref:`ch.phy.intrg`.
+     - ``method = 'teapot'``
+   * - :literal:`model`
+     - :const:`nil`
+     - Integration model: :literal:`'TKT'` or :literal:`'DKD'`. See :ref:`ch.phy.intrg`. [#f7]_
+     - ``model = 'DKD'``
+   * - :literal:`nslice`
+     - :const:`nil`
+     - Slices per element: number, list, or callable :literal:`(elm,mflw,lw)`.
+     - ``nslice = 5``
+   * - :literal:`secnmul`
+     - :const:`nil`
+     - Curved-multipole expansion order. See :ref:`ch.phy.intrg`.
+     - ``secnmul = -1``
+   * - :literal:`fringe`
+     - :const:`nil`
+     - Enable fringe fields (:const:`true` / bitmask).
+     - ``fringe = false``
+   * - :literal:`frngmax`
+     - :const:`nil`
+     - Maximum multipole order for fringe-field expansions.
+     - ``frngmax = 4``
+   * - :literal:`misalign`
+     - :const:`nil`
+     - Apply **error** misalignments from :literal:`seq:ealign`. Permanent :literal:`elm.misalign` is always applied.
+     - ``misalign = true``
+   * - :literal:`aperture`
+     - :const:`nil`
+     - Default aperture for elements without one.
+     - ``aperture = {kind='circle', 0.05}``
+   * - :literal:`radiate`
+     - :const:`nil`
+     - Radiation mode (collapsed to damping for closed-orbit/OTM stages). See :ref:`ch.phy.radia`.
+     - ``radiate = true``
+   * - :literal:`nocavity`
+     - :const:`nil`
+     - Disable RF cavities (5D tracking).
+     - ``nocavity = true``
+   * - :literal:`totalpath`
+     - :const:`nil`
+     - Use total path for :literal:`t`.
+     - ``totalpath = true``
+   * - :literal:`implicit`
+     - :const:`nil`
+     - Slice implicit elements for smooth plotting.
+     - ``implicit = true``
+   * - :literal:`cmap`
+     - :const:`nil`
+     - Use C/C++ maps when available.
+     - ``cmap = false``
+   * - :literal:`ptcmodel`
+     - :const:`nil`
+     - Backend: :const:`nil` = MAD-NG, :const:`true` = PTC, :const:`false` = MAD-X. [#f8]_
+     - ``ptcmodel = true``
+
+**Output and saving** (see :ref:`ch.phy.intrg` for selector strings)
+
+.. list-table::
+   :widths: 14 10 46 30
+   :header-rows: 1
+
+   * - Attribute
+     - Default
+     - Description
+     - Example
+   * - :literal:`save`
+     - :const:`true`
+     - When to save rows: :const:`true` = at exit, :const:`false` = none, or selector string. See :ref:`ch.phy.intrg`.
+     - ``save = false``
+   * - :literal:`aper`
+     - :const:`nil`
+     - When to check aperture, or selector string.
+     - ``aper = 'atbody'``
+   * - :literal:`observe`
+     - :const:`0`
+     - Save all elements (:const:`0`) or only :meth:`:is_observed` every :math:`n` turns.
+     - ``observe = 1``
+   * - :literal:`savesel`
+     - :const:`nil`
+     - Predicate :literal:`(elm,mflw,lw,islc)` to filter saved elements.
+     - ``savesel = \e -> mylist[e.name]``
+   * - :literal:`savemap`
+     - :const:`nil`
+     - Save damap in column :literal:`__map`.
+     - ``savemap = true``
+   * - :literal:`saveanf`
+     - :const:`nil`
+     - Save analysed normal form in column :literal:`__nf`.
+     - ``saveanf = true``
+
+**Action hooks** (see :ref:`ch.phy.intrg` for slice index convention)
+
+.. list-table::
+   :widths: 14 10 46 30
+   :header-rows: 1
+
+   * - Attribute
+     - Default
+     - Description
+     - Example
+   * - :literal:`atentry`
+     - :const:`nil`
+     - :literal:`(elm,mflw,0,-1)` — called at element entry (slice :const:`-1`).
+     - ``atentry = myaction``
+   * - :literal:`atslice`
+     - :const:`nil`
+     - :literal:`(elm,mflw,lw,islc)` — called at each body slice (slice :const:`0`…:math:`N`).
+     - ``atslice = myaction``
+   * - :literal:`atexit`
+     - :const:`nil`
+     - :literal:`(elm,mflw,0,-2)` — called at element exit (slice :const:`-2`).
+     - ``atexit = myaction``
+   * - :literal:`atsave`
+     - :const:`nil`
+     - :literal:`(elm,mflw,lw,islc)` — called when a row is saved.
+     - ``atsave = myaction``
+   * - :literal:`ataper`
+     - :const:`nil`
+     - :literal:`(elm,mflw,lw,islc)` — called at aperture check.
+     - ``ataper = myaction``
+   * - :literal:`atdebug`
+     - :const:`nil`
+     - :literal:`(elm,mflw,lw,[msg],[...])` — called at map entry/exit. Defaults to :literal:`mdump` if :literal:`debug >= 4`.
+     - ``atdebug = myaction``
+   * - :literal:`apersel`
+     - :const:`nil`
+     - Predicate to suppress aperture check per element.
+     - ``apersel = \e -> e.kind ~= 'marker'``
+
+**Closed orbit and misc**
+
+.. list-table::
+   :widths: 14 10 46 30
+   :header-rows: 1
+
+   * - Attribute
+     - Default
+     - Description
+     - Example
+   * - :literal:`costp`
+     - :const:`nil`
+     - Finite-difference scale for orbit Jacobian (inherited from :var:`cofind` if nil).
+     - ``costp = 1e-8``
+   * - :literal:`coitr`
+     - :const:`nil`
+     - Maximum closed-orbit Newton iterations (inherited if nil).
+     - ``coitr = 25``
+   * - :literal:`cotol`
+     - :const:`nil`
+     - Closed-orbit convergence tolerance (inherited if nil).
+     - ``cotol = 1e-6``
+   * - :literal:`O1`
+     - :const:`nil`
+     - Orbit translation subtracted from the final closed orbit.
+     - ``O1 = {t=100, pt=10}``
+   * - :literal:`info`
+     - :const:`nil`
+     - Verbosity level for console output.
+     - ``info = 2``
+   * - :literal:`debug`
+     - :const:`nil`
+     - Debug output level.
+     - ``debug = 2``
+   * - :literal:`usrdef`
+     - :const:`nil`
+     - User data attached to the mflow and passed to element maps.
+     - ``usrdef = {myvar=val}``
+   * - :literal:`mflow`
+     - :const:`nil`
+     - Existing mflow to continue (reuses setup; only :literal:`nstep`, :literal:`info`, :literal:`debug` are refreshed).
+     - ``mflow = mflw0``
+
+
+The :var:`twiss` command returns the following objects:
+
+.. list-table::
+   :widths: 15 85
+   :header-rows: 1
+
+   * - Return
+     - Description
+   * - :literal:`mtbl`
+     - An *mtable* corresponding to the augmented TFS table of the :var:`track` command with the :var:`twiss` command columns.
+   * - :literal:`mflw`
+     - An *mflow* corresponding to the augmented map flow of the :var:`track` command with the :var:`twiss` command data.
+   * - :literal:`eidx`
+     - An optional *number* corresponding to the last tracked element index in the sequence when :literal:`nstep` stopped the command before the end of the :literal:`range`.
 
 
 Twiss mtable
@@ -310,231 +376,417 @@ The :var:`twiss` command returns a *mtable* where the information described here
 
 The header of the *mtable* contains the fields in the default order: [#f3]_
 
-**name**
-	The name of the command that created the *mtable*, e.g. :literal:`"twiss"`.
-**type**
-	The type of the *mtable*, i.e. :literal:`"twiss"`.
-**origin**
-	The origin of the application that created the *mtable*, e.g. :literal:`"MAD 1.0.0 OSX 64"`.
-**date**
-	The date of the creation of the *mtable*, e.g. :literal:`"27/05/20"`.
-**time**
-	The time of the creation of the *mtable*, e.g. :literal:`"19:18:36"`.
-**refcol**
-	The reference *column* for the *mtable* dictionnary, e.g. :literal:`"name"`.
-**direction**
-	The value of the command attribute :literal:`dir`.
-**observe**
-	The value of the command attribute :literal:`observe`.
-**implicit**
-	The value of the command attribute :literal:`implicit`.
-**misalign**
-	The value of the command attribute :literal:`misalign`.
-**radiate**
-	The value of the command attribute :literal:`radiate`.
-**particle**
-	The reference beam particle name.
-**energy**
-	The reference beam energy.
-**deltap**
-	The value of the command attribute :literal:`deltap`.
-**lost**
-	The number of lost particle(s) or damap(s).
-**chrom**
-	The value of the command attribute :literal:`chrom`.
-**coupling**
-	The value of the command attribute :literal:`coupling`.
-**trkopt**
-	The value of the command attribute :literal:`trkopt`.
-**trkrdt**
-	The value of the command attribute :literal:`trkrdt`.
-**length**
-	The :math:`s`-length of the tracked design orbit.
-**q1**
-	The tunes of mode 1.
-**q2**
-	The tunes of mode 2.
-**q3**
-	The tunes of mode 3.
-**alfap**
-	The momentum compaction factor :math:`\alpha_p`.
-**etap**
-	The phase slip factor :math:`\eta_p`.
-**gammatr**
-	The energy gamma transition :math:`\gamma_{\text{tr}}`.
-**synch_1**
-	The first synchroton radiation integral.
-**synch_2**
-	The second synchroton radiation integral.
-**synch_3**
-	The third synchroton radiation integral.
-**synch_4**
-	The fourth synchroton radiation integral.
-**synch_5**
-	The fifth synchroton radiation integral.
-**synch_6**
-	The sixth synchroton radiation integral.
-**synch_8**
-	The eighth synchroton radiation integral.
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
+
+   * - Field
+     - Description
+   * - :literal:`name`
+     - Name of the command, e.g. :literal:`"twiss"`.
+   * - :literal:`type`
+     - Type of the mtable, i.e. :literal:`"twiss"`.
+   * - :literal:`origin`
+     - Application origin, e.g. :literal:`"MAD 1.0.0 OSX 64"`.
+   * - :literal:`date`
+     - Creation date, e.g. :literal:`"27/05/20"`.
+   * - :literal:`time`
+     - Creation time, e.g. :literal:`"19:18:36"`.
+   * - :literal:`refcol`
+     - Reference column for the mtable dictionary, e.g. :literal:`"name"`.
+   * - :literal:`direction`
+     - Value of the command attribute :literal:`dir`.
+   * - :literal:`observe`
+     - Value of the command attribute :literal:`observe`.
+   * - :literal:`implicit`
+     - Value of the command attribute :literal:`implicit`.
+   * - :literal:`misalign`
+     - Value of the command attribute :literal:`misalign`.
+   * - :literal:`radiate`
+     - Value of the command attribute :literal:`radiate`.
+   * - :literal:`particle`
+     - Reference beam particle name.
+   * - :literal:`energy`
+     - Reference beam energy.
+   * - :literal:`deltap`
+     - Value of the command attribute :literal:`deltap`.
+   * - :literal:`lost`
+     - Number of lost particle(s) or damap(s).
+   * - :literal:`chrom`
+     - Value of the command attribute :literal:`chrom`.
+   * - :literal:`coupling`
+     - Value of the command attribute :literal:`coupling`.
+   * - :literal:`trkopt`
+     - Value of the command attribute :literal:`trkopt`.
+   * - :literal:`trkrdt`
+     - Value of the command attribute :literal:`trkrdt`.
+   * - :literal:`length`
+     - :math:`s`-length of the tracked design orbit.
+   * - :literal:`q1`
+     - Tunes of mode 1.
+   * - :literal:`q2`
+     - Tunes of mode 2.
+   * - :literal:`q3`
+     - Tunes of mode 3.
+   * - :literal:`alfap`
+     - Momentum compaction factor :math:`\alpha_p`.
+   * - :literal:`etap`
+     - Phase slip factor :math:`\eta_p`.
+   * - :literal:`gammatr`
+     - Energy gamma transition :math:`\gamma_{\text{tr}}`.
+   * - :literal:`synch_1`
+     - First synchrotron radiation integral.
+   * - :literal:`synch_2`
+     - Second synchrotron radiation integral.
+   * - :literal:`synch_3`
+     - Third synchrotron radiation integral.
+   * - :literal:`synch_4`
+     - Fourth synchrotron radiation integral.
+   * - :literal:`synch_5`
+     - Fifth synchrotron radiation integral.
+   * - :literal:`synch_6`
+     - Sixth synchrotron radiation integral.
+   * - :literal:`synch_8`
+     - Eighth synchrotron radiation integral.
 
 The core of the *mtable* contains the columns in the default order: [#f6]_
 
-**name**
-	The name of the element.
-**kind**
-	The kind of the element.
-**s**
-	The :math:`s`-position at the end of the element slice.
-**l**
-	The length from the start of the element to the end of the element slice.
-**id**
-	The index of the particle or damap as provided in :var:`X0`.
-**x**
-	The local coordinate :math:`x` at the :math:`s`-position .
-**px**
-	The local coordinate :math:`p_x` at the :math:`s`-position.
-**y**
-	The local coordinate :math:`y` at the :math:`s`-position.
-**py**
-	The local coordinate :math:`p_y` at the :math:`s`-position.
-**t**
-	The local coordinate :math:`t` at the :math:`s`-position.
-**pt**
-	The local coordinate :math:`p_t` at the :math:`s`-position.
-**pc**
-	The reference beam :math:`P_0c` in which :math:`p_t` is expressed.
-**ktap**
-	The tapering compensation factor stored at the current tracking position.
-**slc**
-	The slice index ranging from :literal:`-2` to :literal:`nslice`.
-**turn**
-	The turn number.
-**tdir**
-	The :math:`t`-direction of the tracking in the element.
-**eidx**
-	The index of the element in the sequence.
-**status**
-	The status of the particle or damap.
-**alfa11**
-	The optical function :math:`\alpha` of mode 1 at the :math:`s`-position.
-**beta11**
-	The optical function :math:`\beta` of mode 1 at the :math:`s`-position.
-**gama11**
-	The optical function :math:`\gamma` of mode 1 at the :math:`s`-position.
-**mu1**
-	The phase advance :math:`\mu` of mode 1 at the :math:`s`-position.
-**dx**
-	The dispersion function of :math:`x` at the :math:`s`-position.
-**dpx**
-	The dispersion function of :math:`p_x` at the :math:`s`-position.
-**alfa22**
-	The optical function :math:`\alpha` of mode 2 at the :math:`s`-position.
-**beta22**
-	The optical function :math:`\beta` of mode 2 at the :math:`s`-position.
-**gama22**
-	The optical function :math:`\gamma` of mode 2 at the :math:`s`-position.
-**mu2**
-	The phase advance :math:`\mu` of mode 2 at the :math:`s`-position.
-**dy**
-	The dispersion function of :math:`y` at the :math:`s`-position.
-**dpy**
-	The dispersion function of :math:`p_y` at the :math:`s`-position.
-**alfa33**
-	The optical function :math:`\alpha` of mode 3 at the :math:`s`-position.
-**beta33**
-	The optical function :math:`\beta` of mode 3 at the :math:`s`-position.
-**gama33**
-	The optical function :math:`\gamma` of mode 3 at the :math:`s`-position.
-**mu3**
-	The phase advance :math:`\mu` of mode 3 at the :math:`s`-position.
-**__map**
-	The damap at the :math:`s`-position. [#f5]_
+.. list-table::
+   :widths: 15 85
+   :header-rows: 1
+
+   * - Column
+     - Description
+   * - :literal:`name`
+     - Name of the element.
+   * - :literal:`kind`
+     - Kind of the element.
+   * - :literal:`s`
+     - :math:`s`-position at the end of the element slice.
+   * - :literal:`l`
+     - Length from the start of the element to the end of the slice.
+   * - :literal:`id`
+     - Index of the particle or damap as provided in :literal:`X0`.
+   * - :literal:`x`
+     - Local coordinate :math:`x` at the :math:`s`-position.
+   * - :literal:`px`
+     - Local coordinate :math:`p_x` at the :math:`s`-position.
+   * - :literal:`y`
+     - Local coordinate :math:`y` at the :math:`s`-position.
+   * - :literal:`py`
+     - Local coordinate :math:`p_y` at the :math:`s`-position.
+   * - :literal:`t`
+     - Local coordinate :math:`t` at the :math:`s`-position.
+   * - :literal:`pt`
+     - Local coordinate :math:`p_t` at the :math:`s`-position.
+   * - :literal:`pc`
+     - Reference beam :math:`P_0c` in which :math:`p_t` is expressed.
+   * - :literal:`ktap`
+     - Tapering compensation factor at the current tracking position.
+   * - :literal:`slc`
+     - Slice index ranging from :literal:`-2` to :literal:`nslice`. See :ref:`ch.phy.intrg`.
+   * - :literal:`turn`
+     - Turn number.
+   * - :literal:`tdir`
+     - :math:`t`-direction of the tracking in the element.
+   * - :literal:`eidx`
+     - Index of the element in the sequence.
+   * - :literal:`status`
+     - Status of the particle or damap.
+   * - :literal:`alfa11`
+     - Optical function :math:`\alpha` of mode 1 at the :math:`s`-position.
+   * - :literal:`beta11`
+     - Optical function :math:`\beta` of mode 1 at the :math:`s`-position.
+   * - :literal:`gama11`
+     - Optical function :math:`\gamma` of mode 1 at the :math:`s`-position.
+   * - :literal:`mu1`
+     - Phase advance :math:`\mu` of mode 1 at the :math:`s`-position.
+   * - :literal:`dx`
+     - Dispersion function of :math:`x` at the :math:`s`-position.
+   * - :literal:`dpx`
+     - Dispersion function of :math:`p_x` at the :math:`s`-position.
+   * - :literal:`alfa22`
+     - Optical function :math:`\alpha` of mode 2 at the :math:`s`-position.
+   * - :literal:`beta22`
+     - Optical function :math:`\beta` of mode 2 at the :math:`s`-position.
+   * - :literal:`gama22`
+     - Optical function :math:`\gamma` of mode 2 at the :math:`s`-position.
+   * - :literal:`mu2`
+     - Phase advance :math:`\mu` of mode 2 at the :math:`s`-position.
+   * - :literal:`dy`
+     - Dispersion function of :math:`y` at the :math:`s`-position.
+   * - :literal:`dpy`
+     - Dispersion function of :math:`p_y` at the :math:`s`-position.
+   * - :literal:`alfa33`
+     - Optical function :math:`\alpha` of mode 3 at the :math:`s`-position.
+   * - :literal:`beta33`
+     - Optical function :math:`\beta` of mode 3 at the :math:`s`-position.
+   * - :literal:`gama33`
+     - Optical function :math:`\gamma` of mode 3 at the :math:`s`-position.
+   * - :literal:`mu3`
+     - Phase advance :math:`\mu` of mode 3 at the :math:`s`-position.
+   * - :literal:`__map`
+     - Damap at the :math:`s`-position (only if :literal:`savemap=true`). [#f5]_
 
 If :literal:`saveanf == true`, the protected column :literal:`__nf` is also added and stores the analysed normal form at each saved row.
 
 The mtable also carries the in-memory attributes :literal:`taper`, :literal:`range` and the protected sequence handle :literal:`__seq`, but they are not part of the default header list written to TFS files.
 
-The :literal:`chrom` attribute will add the following fields to the *mtable* header:
+When :literal:`chrom=true`, the following header fields are added:
 
-**dq1**
-	The chromatic derivative of tunes of mode 1, i.e. chromaticities.
-**dq2**
-	The chromatic derivative of tunes of mode 2, i.e. chromaticities.
-**dq3**
-	The chromatic derivative of tunes of mode 3, i.e. chromaticities.
+.. list-table::
+   :widths: 15 85
+   :header-rows: 1
 
-The :literal:`chrom` attribute will add the following columns to the *mtable*:
+   * - Field
+     - Description
+   * - :literal:`dq1`
+     - Chromatic derivative of tunes of mode 1 (chromaticity).
+   * - :literal:`dq2`
+     - Chromatic derivative of tunes of mode 2 (chromaticity).
+   * - :literal:`dq3`
+     - Chromatic derivative of tunes of mode 3 (chromaticity).
 
-**dmu1**
-	The chromatic derivative of the phase advance of mode 1 at the :math:`s`-position.
-**ddx**
-	The chromatic derivative of the dispersion function of :math:`x` at the :math:`s`-position.
-**ddpx**
-	The chromatic derivative of the dispersion function of :math:`p_x` at the :math:`s`-position.
-**wx**
-	The chromatic amplitude function of mode 1 at the :math:`s`-position.
-**phix**
-	The chromatic phase function of mode 1 at the :math:`s`-position.
-**dmu2**
-	The chromatic derivative of the phase advance of mode 2 at the :math:`s`-position.
-**ddy**
-	The chromatic derivative of the dispersion function of :math:`y` at the :math:`s`-position.
-**ddpy**
-	The chromatic derivative of the dispersion function of :math:`p_y` at the :math:`s`-position.
-**wy**
-	The chromatic amplitude function of mode 2 at the :math:`s`-position.
-**phiy**
-	The chromatic phase function of mode 2 at the :math:`s`-position.
+When :literal:`chrom=true`, the following columns are added:
 
-The :literal:`coupling` attribute will add the following columns to the *mtable*:
+.. list-table::
+   :widths: 15 85
+   :header-rows: 1
 
-**alfa12**
-	The optical function :math:`\alpha` of coupling mode 1-2 at the :math:`s`-position.
-**beta12**
-	The optical function :math:`\beta` of coupling mode 1-2 at the :math:`s`-position.
-**gama12**
-	The optical function :math:`\gamma` of coupling mode 1-2 at the :math:`s`-position.
-**alfa13**
-	The optical function :math:`\alpha` of coupling mode 1-3 at the :math:`s`-position.
-**beta13**
-	The optical function :math:`\beta` of coupling mode 1-3 at the :math:`s`-position.
-**gama13**
-	The optical function :math:`\gamma` of coupling mode 1-3 at the :math:`s`-position.
-**alfa21**
-	The optical function :math:`\alpha` of coupling mode 2-1 at the :math:`s`-position.
-**beta21**
-	The optical function :math:`\beta` of coupling mode 2-1 at the :math:`s`-position.
-**gama21**
-	The optical function :math:`\gamma` of coupling mode 2-1 at the :math:`s`-position.
-**alfa23**
-	The optical function :math:`\alpha` of coupling mode 2-3 at the :math:`s`-position.
-**beta23**
-	The optical function :math:`\beta` of coupling mode 2-3 at the :math:`s`-position.
-**gama23**
-	The optical function :math:`\gamma` of coupling mode 2-3 at the :math:`s`-position.
-**alfa31**
-	The optical function :math:`\alpha` of coupling mode 3-1 at the :math:`s`-position.
-**beta31**
-	The optical function :math:`\beta` of coupling mode 3-1 at the :math:`s`-position.
-**gama31**
-	The optical function :math:`\gamma` of coupling mode 3-1 at the :math:`s`-position.
-**alfa32**
-	The optical function :math:`\alpha` of coupling mode 3-2 at the :math:`s`-position.
-**beta32**
-	The optical function :math:`\beta` of coupling mode 3-2 at the :math:`s`-position.
-**gama32**
-	The optical function :math:`\gamma` of coupling mode 3-2 at the :math:`s`-position.
+   * - Column
+     - Description
+   * - :literal:`dmu1`
+     - Chromatic derivative of the phase advance of mode 1 at the :math:`s`-position.
+   * - :literal:`ddx`
+     - Chromatic derivative of the dispersion function of :math:`x` at the :math:`s`-position.
+   * - :literal:`ddpx`
+     - Chromatic derivative of the dispersion function of :math:`p_x` at the :math:`s`-position.
+   * - :literal:`wx`
+     - Chromatic amplitude function of mode 1 at the :math:`s`-position.
+   * - :literal:`phix`
+     - Chromatic phase function of mode 1 at the :math:`s`-position.
+   * - :literal:`dmu2`
+     - Chromatic derivative of the phase advance of mode 2 at the :math:`s`-position.
+   * - :literal:`ddy`
+     - Chromatic derivative of the dispersion function of :math:`y` at the :math:`s`-position.
+   * - :literal:`ddpy`
+     - Chromatic derivative of the dispersion function of :math:`p_y` at the :math:`s`-position.
+   * - :literal:`wy`
+     - Chromatic amplitude function of mode 2 at the :math:`s`-position.
+   * - :literal:`phiy`
+     - Chromatic phase function of mode 2 at the :math:`s`-position.
+
+When :literal:`coupling=true`, the following columns are added:
+
+.. list-table::
+   :widths: 15 85
+   :header-rows: 1
+
+   * - Column
+     - Description
+   * - :literal:`alfa12`
+     - Optical function :math:`\alpha` of coupling mode 1-2 at the :math:`s`-position.
+   * - :literal:`beta12`
+     - Optical function :math:`\beta` of coupling mode 1-2 at the :math:`s`-position.
+   * - :literal:`gama12`
+     - Optical function :math:`\gamma` of coupling mode 1-2 at the :math:`s`-position.
+   * - :literal:`alfa13`
+     - Optical function :math:`\alpha` of coupling mode 1-3 at the :math:`s`-position.
+   * - :literal:`beta13`
+     - Optical function :math:`\beta` of coupling mode 1-3 at the :math:`s`-position.
+   * - :literal:`gama13`
+     - Optical function :math:`\gamma` of coupling mode 1-3 at the :math:`s`-position.
+   * - :literal:`alfa21`
+     - Optical function :math:`\alpha` of coupling mode 2-1 at the :math:`s`-position.
+   * - :literal:`beta21`
+     - Optical function :math:`\beta` of coupling mode 2-1 at the :math:`s`-position.
+   * - :literal:`gama21`
+     - Optical function :math:`\gamma` of coupling mode 2-1 at the :math:`s`-position.
+   * - :literal:`alfa23`
+     - Optical function :math:`\alpha` of coupling mode 2-3 at the :math:`s`-position.
+   * - :literal:`beta23`
+     - Optical function :math:`\beta` of coupling mode 2-3 at the :math:`s`-position.
+   * - :literal:`gama23`
+     - Optical function :math:`\gamma` of coupling mode 2-3 at the :math:`s`-position.
+   * - :literal:`alfa31`
+     - Optical function :math:`\alpha` of coupling mode 3-1 at the :math:`s`-position.
+   * - :literal:`beta31`
+     - Optical function :math:`\beta` of coupling mode 3-1 at the :math:`s`-position.
+   * - :literal:`gama31`
+     - Optical function :math:`\gamma` of coupling mode 3-1 at the :math:`s`-position.
+   * - :literal:`alfa32`
+     - Optical function :math:`\alpha` of coupling mode 3-2 at the :math:`s`-position.
+   * - :literal:`beta32`
+     - Optical function :math:`\beta` of coupling mode 3-2 at the :math:`s`-position.
+   * - :literal:`gama32`
+     - Optical function :math:`\gamma` of coupling mode 3-2 at the :math:`s`-position.
 
 
 Tracking linear normal form
 ---------------------------
 
-TODO
+Internally, :var:`twiss` computes optics by converting each surviving one-turn
+map into a normalizing map and then tracking that linear normal form through
+the requested range. The relevant status transitions in the implementation are:
+
+* coordinate or damap input from :literal:`X0` enters as :literal:`"Xset"` or
+  :literal:`"Mset"`
+* if closed-orbit search is needed, :var:`cofind` promotes eligible inputs to
+  :literal:`"stable"` or rejects them as :literal:`"unstable"`,
+  :literal:`"singular"`, or :literal:`"lost"`
+* stable inputs are converted into one-turn maps
+* one-turn maps are converted in-place into normalizing maps and tagged
+  :literal:`"Aset"`
+* the final :var:`track` pass propagates those normalizing maps while
+  :var:`twiss` extracts optics, optional parametric optics, and optional RDTs
+
+This matters for advanced use because :literal:`trkopt`, :literal:`trkrdt`,
+and :literal:`saveanf` all depend on that analysed normal-form stage:
+
+* :literal:`trkopt` requests extra optics-like columns computed from the
+  tracked normalizing map at each saved row
+* :literal:`trkrdt` requests explicit resonance-driving-term columns and
+  therefore requires analysed normal forms
+* :literal:`saveanf=true` stores the analysed normal form in the protected
+  column :literal:`__nf`
+
+If :var:`twiss` receives an :literal:`"Aset"` damap directly, it can reuse it
+for optics propagation. However, RDT tracking still requires an analysed normal
+form; providing an :literal:`"Aset"` damap without :literal:`__nf` is therefore
+insufficient for :literal:`trkrdt` or :literal:`saveanf`.
+
+Typical Workflows
+-----------------
+
+**Standard optics table**
+
+The simplest use: run twiss on a sequence with an attached beam and inspect
+the tunes and beta functions.
+
+.. literalinclude:: ../../verified_examples/twiss_minimal.mad
+   :language: mad
+
+**Chromatic functions**
+
+Add :literal:`chrom=true` to request chromaticities and the chromatic amplitude
+and phase functions in a single pass using finite differences:
+
+.. code-block:: mad
+
+   tw = twiss { sequence=seq, chrom=true }
+   print("dq1=", tw.dq1, " dq2=", tw.dq2)
+
+**Ranged twiss**
+
+Supply a :literal:`range` to compute optics over a sub-section only.  The
+initial conditions can be a beta0 block or a damap:
+
+.. code-block:: mad
+
+   tw = twiss { sequence=seq, range="BPM1/BPM2" }
+
+Interpreting Outputs
+--------------------
+
+After a successful :literal:`twiss` call the two returned objects are:
+
+**mtbl** (the TFS table)
+
+Scalar summary quantities in the table header:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Field
+     - Meaning
+   * - :literal:`q1`, :literal:`q2`
+     - Tunes of mode 1 and 2
+   * - :literal:`dq1`, :literal:`dq2`
+     - Chromaticities (requires :literal:`chrom=true`)
+   * - :literal:`alfap`
+     - Momentum compaction factor :math:`\alpha_p`
+   * - :literal:`etap`
+     - Phase slip factor :math:`\eta_p`
+   * - :literal:`gammatr`
+     - Transition energy :math:`\gamma_{\text{tr}}`
+   * - :literal:`length`
+     - Total tracked length [m]
+   * - :literal:`synch_1` … :literal:`synch_8`
+     - Synchrotron radiation integrals
+
+Column arrays at each saved element:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Column
+     - Meaning
+   * - :literal:`beta11`, :literal:`beta22`
+     - Beta functions of mode 1 (:math:`x`) and mode 2 (:math:`y`)
+   * - :literal:`alfa11`, :literal:`alfa22`
+     - Alpha functions
+   * - :literal:`mu1`, :literal:`mu2`
+     - Phase advances [rad/2π]
+   * - :literal:`dx`, :literal:`dy`
+     - Dispersion functions [m]
+   * - :literal:`x`, :literal:`px`, :literal:`y`, :literal:`py`
+     - Closed-orbit coordinates at each element
+   * - :literal:`status`
+     - :literal:`"stable"` if the one-turn map is on the unit circle
+   * - :literal:`slc`
+     - Slice index: :const:`-2` at exit (default), :const:`-1` at entry,
+       :const:`0` … :const:`N` for body slices (see :literal:`save`).
+
+**mflw** (the map flow)
+
+Carries the one-turn map, the normalising map, and any saved normal forms.
+Advanced users can pass it back via :literal:`mflow=mflw` for a follow-up
+ranged twiss without repeating the closed-orbit and normal-form preparation.
+
+Common Pitfalls
+---------------
+
+* **Lost particle at turn 0**: the closed-orbit search failed.  The lattice is
+  either unstable at the given energy or the initial guess is far from the orbit.
+  Try :literal:`info=2` to see the iteration log.
+* **Missing beta columns**: twiss only saves at the exit of each element by
+  default (:literal:`observe=0`).  The number of rows equals the number of
+  elements; column values at intermediate slices are not stored unless
+  :literal:`save="atbody"` or similar is set.
+* **Column names vs MAD-X**: MAD-NG uses :literal:`beta11` / :literal:`beta22`
+  (double-index, mode-based) instead of MAD-X's :literal:`betx` / :literal:`bety`.
+* **trkopt requires a damap X0**: parametric columns are only available when
+  :literal:`X0` is a damap with named parameters.  Passing plain coordinates
+  silently produces no parametric columns.
+* **chrom vs trkopt**: :literal:`chrom=true` uses a finite-difference
+  approximation.  Use :literal:`trkopt` with a :literal:`pt`-dependent damap for
+  exact chromatic derivatives.
 
 Examples
 --------
 
-TODO
+The examples below were working for MAD-NG version :literal:`1.1.13_P`.
+
+Minimal derivative-aware optics request with :literal:`trkopt`:
+
+.. literalinclude:: ../../verified_examples/trkopt_minimal.mad
+   :language: mad
+
+This setup requests only the named extra columns; the base optics columns are
+still present in the returned *mtable*.
+
+Minimal RDT request with :literal:`trkrdt` and :literal:`saveanf`:
+
+.. literalinclude:: ../../verified_examples/trkrdt_minimal.mad
+   :language: mad
+
+In this case the returned *mtable* includes the requested RDT columns and the
+protected column :literal:`__nf`.
+
+For a workflow-oriented overview of these derivative and RDT patterns, see
+:doc:`parametric_optics_and_rdts`.
 
 
 .. rubric:: Footnotes

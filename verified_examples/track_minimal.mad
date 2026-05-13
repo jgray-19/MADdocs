@@ -1,0 +1,21 @@
+local beam, track in MAD
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+local trk = track {
+  sequence = psb3,
+  X0       = {x=1e-3, px=0, y=0, py=0, t=0, pt=0},
+  nturn    = 1,
+}
+
+assert(trk["x"],  "missing x column")
+assert(trk["px"], "missing px column")
+
+trk:write("track_minimal", {"name", "s", "x", "px", "y", "py", "t", "pt"})
+
+print("track: nrows=", #trk)

@@ -17,10 +17,10 @@ lexers['mad'] = MadLexer()
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 master_doc = 'index'
-project = 'MAD-NG Unofficial Reference Manual'
-copyright = '2023, Laurent Deniau'
-author = 'Laurent Deniau'
-version = release = '0.9.7'
+project = "Unofficial MAD-NG Reference Manual"
+copyright = "2026, Joshua Gray"
+author = "Laurent Deniau & Joshua Gray"
+version = release = "1.1.13"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

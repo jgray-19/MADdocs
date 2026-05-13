@@ -110,13 +110,15 @@ class MadObject(ObjectDescription):
         """
         prefix = []
 
+        if 'deprecated' in self.options:
+            prefix.append('deprecated')
+        if 'abstract' in self.options:
+            prefix.append('abstract')
         if 'virtual' in self.options:
             prefix.append('virtual')
         if 'protected' in self.options:
             prefix.append('protected')
-        if 'abstract' in self.options:
-            prefix.append('abstract')
-        return ' '.join(prefix) + ' '
+        return (' '.join(prefix) + ' ') if prefix else ''
 
     def needs_arg_list(self) -> bool:
         """May return true if an empty argument list is to be generated even if
@@ -435,14 +437,16 @@ class MadClassAttribute(MadObject):
         sig_node['fullname'] = attr_name
 
         sig_node += addnodes.desc_name(attr_name, attr_name)
-        sig_node += addnodes.desc_annotation(": ", ": ")
-        sig_node += addnodes.desc_type(attr_type, attr_type)
+        if attr_type:
+            sig_node += addnodes.desc_annotation(": ", ": ")
+            sig_node += addnodes.desc_type(attr_type, attr_type)
 
         full_attr_name = ".".join(filter(None, [modname, classname, attr_name]))
-        return full_attr_name
+        return full_attr_name, ""
 
-    def add_target_and_index(self, name: str, sig: str, sig_node: addnodes.desc_signature) -> None:
+    def add_target_and_index(self, name_cls: str, sig: str, sig_node: addnodes.desc_signature) -> None:
         mod_name = self.options.get('module', self.env.ref_context.get('mad:module'))
+        name = name_cls[0]  # name_cls is (fullname, prefix) tuple from handle_signature
         full_name = (mod_name and mod_name + '.' or '') + name
 
         if full_name not in self.state.document.ids:

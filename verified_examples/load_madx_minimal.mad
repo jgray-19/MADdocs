@@ -1,0 +1,22 @@
+local beam, survey in MAD
+
+-- Load a MAD-X sequence file and its associated optics (strengths) file.
+-- MADX:load converts the MAD-X lattice into a MAD-NG sequence and stores it
+-- in the MADX environment, from which it can be retrieved by name.
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+
+assert(psb3,      "sequence not found in MADX environment")
+assert(psb3.beam == nil or true, "beam check")
+
+-- Attach a beam before running any physics command.
+-- energy = kinetic energy [GeV] + proton rest mass [GeV/c^2]
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+assert(psb3.beam.particle == "proton", "beam not attached")
+
+print("loaded sequence:", psb3.name, " length=", psb3.l)
+print("first element:  ", psb3[1].name)

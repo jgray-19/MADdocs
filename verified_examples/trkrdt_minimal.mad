@@ -1,0 +1,23 @@
+local beam, twiss, damap in MAD
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+local x0 = damap { nv=6, no={3,3,3,3,1,1} }
+
+local tw = twiss {
+  sequence=psb3,
+  X0=x0,
+  trkrdt={"f3000", "f2100"},
+  saveanf=true,
+}
+
+assert(tw["f3000"], "missing f3000")
+assert(tw["f2100"], "missing f2100")
+assert(tw["__nf" ], "missing __nf")
+
+print("trkrdt minimal example: OK")

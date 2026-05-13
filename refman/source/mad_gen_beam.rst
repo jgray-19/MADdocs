@@ -6,127 +6,149 @@ The :var:`beam` object is the *root object* of beams that store information rela
 
 The :var:`beam` module extends the :doc:`typeid <mad_mod_types>` module with the :func:`is_beam` *function*, which returns :const:`true` if its argument is a :var:`beam` object, :const:`false` otherwise.
 
+Synopsis
+--------
+
+.. code-block:: mad
+   :caption: Beam constructor with default setup.
+
+   local beam in MAD
+
+   b = beam {
+     particle = "positron",
+     -- identity (readonly; set via particle database or by defining a new particle)
+     energy  = 1,
+     -- derived views (setting these updates energy)
+     -- pc, beta, gamma, betgam, brho, pc2, beta2, betgam2
+     -- emittances
+     ex      = 1,
+     ey      = 1,
+     et      = 1e-3,
+     -- bunch parameters
+     nbunch  = 0,
+     npart   = 0,
+     sigt    = 1,
+     sige    = 1e-3,
+   }
+
 Attributes
 ----------
 
 The :var:`beam` *object* provides the following attributes:
 
-**particle**
-	 A *string* specifying the name of the particle. (default: :literal:`"positron"`).
+.. list-table::
+   :widths: 16 64 20
+   :header-rows: 1
 
-**mass**
-	 A *number* specifying the energy-mass of the particle [GeV]. (default: :literal:`emass`).
+   * - Attribute
+     - Description
+     - Default
+   * - :literal:`particle`
+     - Particle name.
+     - :literal:`"positron"`
+   * - :literal:`mass`
+     - Particle energy-mass [GeV].
+     - :literal:`emass`
+   * - :literal:`charge`
+     - Particle charge in [q] unit of :literal:`qelect`. [#f1]_
+     - :const:`1`
+   * - :literal:`spin`
+     - Particle spin.
+     - :const:`0`
+   * - :literal:`emrad`
+     - Electromagnetic radius [m],
 
-**charge**
-	 A *number* specifying the charge of the particle in [q] unit of :literal:`qelect`. [#f1]_ (default: :const:`1`).
+       :math:`\mathrm{emrad} = \mathrm{krad_GeV}\times\mathrm{charge}^2/\mathrm{mass}` where :math:`\mathrm{krad_GeV} = 10^{-9} (4 \pi\varepsilon_0)^{-1} q`.
+     - computed
+   * - :literal:`aphot`
+     - Average number of photons emitted per bending unit,
 
-**spin**
-	 A *number* specifying the spin of the particle. (default: :const:`0`).
+       :math:`\mathrm{aphot} = \mathrm{kpht_GeV}\times\mathrm{charge}^2\times\mathrm{betgam}` where :math:`\mathrm{kpht_GeV}` :math:`= \frac{5}{2\sqrt{3}}` :math:`\mathrm{krad_GeV}` :math:`(\hbar c)^{-1}`.
+     - computed
+   * - :literal:`energy`
+     - Particle energy [GeV].
+     - :const:`1`
+   * - :literal:`pc`
+     - Momentum times the speed of light [GeV],
 
-**emrad**
-	 A *lambda* returning the electromagnetic radius of the particle [m], 
+       :math:`\mathrm{pc} = (\mathrm{energy}^2 - \mathrm{mass}^2)^{\frac{1}{2}}`.
+     - computed
+   * - :literal:`beta`
+     - Relativistic :math:`\beta=\frac{v}{c}`,
 
-	 :math:`\mathrm{emrad} = \mathrm{krad_GeV}\times\mathrm{charge}^2/\mathrm{mass}` where :math:`\mathrm{krad_GeV} = 10^{-9} (4 \pi\varepsilon_0)^{-1} q`.
+       :math:`\mathrm{beta} = (1 - (\mathrm{mass}/\mathrm{energy})^2)^{\frac{1}{2}}`.
+     - computed
+   * - :literal:`gamma`
+     - Lorentz factor :math:`\gamma=(1-\beta^2)^{-\frac{1}{2}}`,
 
-**aphot**
-	 A *lambda* returning the average number of photon emitted per bending unit, 
+       :math:`\mathrm{gamma} = \mathrm{energy}/\mathrm{mass}`.
+     - computed
+   * - :literal:`betgam`
+     - Product :math:`\beta\gamma`,
 
-	 :math:`\mathrm{aphot} = \mathrm{kpht_GeV}\times\mathrm{charge}^2\times\mathrm{betgam}` where :math:`\mathrm{kpht_GeV}` :math:`= \frac{5}{2\sqrt{3}}` :math:`\mathrm{krad_GeV}` :math:`(\hbar c)^{-1}`.
+       :math:`\mathrm{betgam} = (\mathrm{gamma}^2 - 1)^\frac{1}{2}`.
+     - computed
+   * - :literal:`pc2`
+     - :math:`\mathrm{pc}^2`, avoiding the square root.
+     - computed
+   * - :literal:`beta2`
+     - :math:`\mathrm{beta}^2`, avoiding the square root.
+     - computed
+   * - :literal:`betgam2`
+     - :math:`\mathrm{betgam}^2`, avoiding the square root.
+     - computed
+   * - :literal:`brho`
+     - Magnetic rigidity [T.m],
 
-**energy**
-	 A *number* specifying the particle energy [GeV]. (default: :const:`1`).
-
-**pc**
-	 A *lambda* returning the particle momentum times the speed of light [GeV],
-
-	 :math:`\mathrm{pc} = (\mathrm{energy}^2 - \mathrm{mass}^2)^{\frac{1}{2}}`.
-
-**beta**
-	 A *lambda* returning the particle relativistic :math:`\beta=\frac{v}{c}`,
-
-	 :math:`\mathrm{beta} = (1 - (\mathrm{mass}/\mathrm{energy})^2)^{\frac{1}{2}}`.
-
-**gamma**
-	 A *lambda* returning the particle Lorentz factor :math:`\gamma=(1-\beta^2)^{-\frac{1}{2}}`,
-
-	 :math:`\mathrm{gamma} = \mathrm{energy}/\mathrm{mass}`.
-
-**betgam**
-	 A *lambda* returning the product :math:`\beta\gamma`,
-
-	 :math:`\mathrm{betgam} = (\mathrm{gamma}^2 - 1)^\frac{1}{2}`.
-
-**pc2**
-	 A *lambda* returning :math:`\mathrm{pc}^2`, avoiding the square root.
-
-**beta2**
-	 A *lambda* returning :math:`\mathrm{beta}^2`, avoiding the square root.
-
-**betgam2**
-	 A *lambda* returning :math:`\mathrm{betgam}^2`, avoiding the square root.
-
-**brho**
-	 A *lambda* returning the magnetic rigidity [T.m], 
-
-	 :literal:`brho = GeV_c * pc/|charge|` where :literal:`GeV_c` = :math:`10^{9}/c`
-
-**ex**
-	 A *number* specifying the horizontal emittance :math:`\epsilon_x` [m]. (default: :const:`1`).
-
-**ey**
-	 A *number* specifying the vertical emittance :math:`\epsilon_y` [m]. (default: :const:`1`).
-
-**et**
-	 A *number* specifying the longitudinal emittance :math:`\epsilon_t` [m]. (default: :const:`1e-3`).
-
-**exn**
-	 A *lambda* returning the normalized horizontal emittance [m], 
-
-	 :expr:`exn = ex * betgam`.
-
-**eyn**
-	 A *lambda* returning the normalized vertical emittance [m], 
-
-	 :expr:`eyn = ey * betgam`.
-
-**etn**
-	 A *lambda* returning the normalized longitudinal emittance [m], 
-
-	 :expr:`etn = et * betgam`.
-
-**nbunch**
-	 A *number* specifying the number of particle bunches in the machine. (default: :const:`0`).
-
-**npart**
-	 A *number* specifying the number of particles per bunch. (default: :const:`0`).
-
-**sigt**
-	 A *number* specifying the bunch length in :math:`c \sigma_t`. (default: :const:`1`).
-
-**sige**
-	 A *number* specifying the relative energy spread in :math:`\sigma_E/E` [GeV]. (default: :const:`1e-3`).
-
+       :literal:`brho = GeV_c * pc/|charge|` where :literal:`GeV_c` = :math:`10^{9}/c`
+     - computed
+   * - :literal:`ex`
+     - Horizontal emittance :math:`\epsilon_x` [m].
+     - :const:`1`
+   * - :literal:`ey`
+     - Vertical emittance :math:`\epsilon_y` [m].
+     - :const:`1`
+   * - :literal:`et`
+     - Longitudinal emittance :math:`\epsilon_t` [m].
+     - :const:`1e-3`
+   * - :literal:`exn`
+     - Normalized horizontal emittance [m], :expr:`exn = ex * betgam`.
+     - computed/update
+   * - :literal:`eyn`
+     - Normalized vertical emittance [m], :expr:`eyn = ey * betgam`.
+     - computed/update
+   * - :literal:`etn`
+     - Normalized longitudinal emittance [m], :expr:`etn = et * betgam`.
+     - computed/update
+   * - :literal:`nbunch`
+     - Number of particle bunches in the machine.
+     - :const:`0`
+   * - :literal:`npart`
+     - Number of particles per bunch.
+     - :const:`0`
+   * - :literal:`sigt`
+     - Bunch length in :math:`c \sigma_t`.
+     - :const:`1`
+   * - :literal:`sige`
+     - Relative energy spread in :math:`\sigma_E/E` [GeV].
+     - :const:`1e-3`
 
 The :var:`beam` *object* also implements a special protect-and-update mechanism for its attributes to ensure consistency and precedence between the physical quantities stored internally:
 
-*	 The following attributes are *read-only*, i.e. writing to them triggers an error:
-		
-		:literal:`mass, charge, spin, emrad, aphot`
+.. list-table::
+   :widths: 20 80
+   :header-rows: 1
 
-*	 The following attributes are *read-write*, i.e. hold values, with their accepted numerical ranges:
-		
-		:literal:`particle, energy` :math:`>` :var:`mass`,
-		:literal:`ex` :math:`>0`, :literal:`ey` :math:`>0`, :literal:`et` :math:`>0`,
-		:literal:`nbunch` :math:`>0`, :literal:`npart` :math:`>0`, :literal:`sigt` :math:`>0`, :literal:`sige` :math:`>0`.
-
-*	 The following attributes are *read-update*, i.e. setting these attributes update the :literal:`energy`, with their accepted numerical ranges:
-		
-		:literal:`pc` :math:`>0`, :math:`0.9>` :literal:`beta` :math:`>0`, :literal:`gamma` :math:`>1`, :literal:`betgam` :math:`>0.1`, :literal:`brho` :math:`>0`,
-		:literal:`pc2`, :literal:`beta2`, :literal:`betgam2`.
-
-*	 The following attributes are *read-update*, i.e. setting these attributes update the emittances :literal:`ex`, :literal:`ey`, and :literal:`et` repectively, with their accepted numerical ranges:
-		
-		:literal:`exn` :math:`>0`, :literal:`eyn` :math:`>0`, :literal:`etn` :math:`>0`.
+   * - Category
+     - Attributes / behavior
+   * - Read-only
+     - Writing triggers an error: :literal:`mass`, :literal:`charge`, :literal:`spin`, :literal:`emrad`, :literal:`aphot`.
+   * - Read-write
+     - Stored values (with ranges): :literal:`particle`, :literal:`energy` :math:`>` :var:`mass`; :literal:`ex` :math:`>0`, :literal:`ey` :math:`>0`, :literal:`et` :math:`>0`; :literal:`nbunch` :math:`>0`, :literal:`npart` :math:`>0`, :literal:`sigt` :math:`>0`, :literal:`sige` :math:`>0`.
+   * - Read-update (energy)
+     - Setting updates :literal:`energy`: :literal:`pc` :math:`>0`, :math:`0.9>` :literal:`beta` :math:`>0`, :literal:`gamma` :math:`>1`, :literal:`betgam` :math:`>0.1`, :literal:`brho` :math:`>0`, plus :literal:`pc2`, :literal:`beta2`, :literal:`betgam2`.
+   * - Read-update (emittances)
+     - Setting updates :literal:`ex`, :literal:`ey`, :literal:`et`: :literal:`exn` :math:`>0`, :literal:`eyn` :math:`>0`, :literal:`etn` :math:`>0`.
 
 
 Methods
@@ -134,14 +156,22 @@ Methods
 
 The :var:`beam` object provides the following methods:
 
-**new_particle**
-	 A *method*	:literal:`(particle, mass, charge, [spin])` creating new particles or nuclei and store them in the particles database. The arguments specify in order the new :literal:`particle`'s name, energy-:var:`mass` [GeV], :var:`charge` [q], and :var:`spin` (default: :const:`0`). These arguments can also be grouped into a *table* with same attribute names as the argument names and passed as the solely argument.
+.. list-table::
+   :widths: 20 30 50
+   :header-rows: 1
 
-**set_variables**
-	 A *method*	:literal:`(set)` returning :literal:`self` with the attributes set to the pairs (*key*, *value*) contained in :literal:`set`. This method overrides the original one to implement the special protect-and-update mechanism, but the order of the updates is undefined. It also creates new particle on-the-fly if the :var:`mass` and the :var:`charge` are defined, and then select it. Shortcut :literal:`setvar`.
-
-**showdb**
-	 A *method*	:literal:`([file])` displaying the content of the particles database to :literal:`file` (default: :literal:`io.stdout`).
+   * - Method
+     - Signature
+     - Description
+   * - :literal:`new_particle`
+     - :literal:`(particle, mass, charge, [spin])`
+     - Create new particles or nuclei in the shared database. Arguments may also be passed as a single table.
+   * - :literal:`set_variables`
+     - :literal:`(set)`
+     - Set attributes from (*key*, *value*) pairs, applying the protect/update mechanism (update order undefined). Shortcut :literal:`setvar`.
+   * - :literal:`showdb`
+     - :literal:`([file])`
+     - Display the particles database to :literal:`file` (default: :literal:`io.stdout`).
 
 
 Metamethods
@@ -149,45 +179,49 @@ Metamethods
 
 The :var:`beam` object provides the following metamethods:
 
-**__init**
-	 A *metamethod*	:literal:`()` returning :literal:`self` after having processed the attributes with the special protect-and-update mechanism, where the order of the updates is undefined. It also creates new particle on-the-fly if the :var:`mass` and the :var:`charge` are defined, and then select it.
+.. list-table::
+   :widths: 20 20 60
+   :header-rows: 1
 
-**__newindex**
-	 A *metamethod*	:literal:`(key, val)` called by the assignment operator :expr:`[key]=val` to create new attributes for the pairs (*key*, *value*) or to update the underlying physical quantity of the :var:`beam` objects.
-
-
-The following attribute is stored with metamethods in the metatable, but has different purpose:
-
-
-**__beam**
-	 A unique private *reference* that characterizes beams.
+   * - Metamethod
+     - Signature
+     - Description
+   * - :literal:`__init`
+     - :literal:`()`
+     - Process initialization using the protect/update mechanism (update order undefined). Creates a new particle on-the-fly if :literal:`mass` and :literal:`charge` are defined.
+   * - :literal:`__newindex`
+     - :literal:`(key, val)`
+     - Handle assignments by creating attributes or updating the underlying physical quantity consistently.
+   * - :literal:`__beam`
+     - internal
+     - Unique private reference that characterizes beams.
 
 
 Particles database
 ------------------
 
-The :var:`beam` *object* manages the particles database, which is shared by all :var:`beam` instances. The default set of supported particles is: 
+The :var:`beam` *object* manages the particles database, which is shared by all :var:`beam` instances. The default set of supported particles is:
 
-		electron, positron, proton, antiproton, neutron, antineutron, ion, muon, 
+		electron, positron, proton, antiproton, neutron, antineutron, ion, muon,
 		antimuon, deuteron, antideuteron, negmuon (=muon), posmuon (=antimuon).
 
 New particles can be added to the database, either explicitly using the :literal:`new_particle` method, or by creating or updating a beam *object* and specifying all the attributes of a particle, i.e. :literal:`particle`'s name, :var:`charge`, :var:`mass`, and (optional) :var:`spin`:
 
 .. code-block:: lua
-	
+
 	local beam in MAD
 	local nmass, pmass, mumass in MAD.constant
-	
+
 	-- create a new particle
 	beam:new_particle{ particle='mymuon', mass=mumass, charge=-1, spin=1/2 }
-	
+
 	-- create a new beam and a new nucleus
 	local pbbeam = beam { particle='pb208', mass=82*pmass+126*nmass, charge=82 }
 
 The particles database can be displayed with the :func:`showdb` method at any time from any beam:
 
 .. code-block:: lua
-	
+
 	beam:showdb()  -- check that both, mymuon and pb208 are in the database.
 
 
@@ -197,19 +231,19 @@ Particle charges
 The physics of MAD-NG is aware of particle charges. To enable the compatibility with codes like MAD-X that ignores the particle charges, the global option :var:`nocharge` can be used to control the behavior of created beams as shown by the following example:
 
 .. code-block:: lua
-	
+
 	local beam, option in MAD
 	local beam1 = beam { particle="electron" } -- beam with negative charge
 	print(beam1.charge, option.nocharge)       -- display: -1  false
-	
+
 	option.nocharge = true                     -- disable particle charges
 	local beam2 = beam { particle="electron" } -- beam with negative charge
 	print(beam2.charge, option.nocharge)       -- display:  1  true
-	
+
 	-- beam1 was created before nocharge activation...
 	print(beam1.charge, option.nocharge)       -- display: -1  true
 
-This approach ensures consistency of beams behavior during their entire lifetime. [#f2]_ 
+This approach ensures consistency of beams behavior during their entire lifetime. [#f2]_
 
 Examples
 --------
@@ -217,16 +251,16 @@ Examples
 The following code snippet creates the LHC lead beams made of bare nuclei :math:`^{208}\mathrm{Pb}^{82+}`
 
 .. code-block:: lua
-	
+
 	local beam in MAD
 	local lhcb1, lhcb2 in MADX
 	local nmass, pmass, amass in MAD.constant
 	local pbmass = 82*pmass+126*nmass
-	
+
 	-- attach a new beam with a new particle to lhcb1 and lhcb2.
 	lhc1.beam = beam 'Pb208' { particle='pb208', mass=pbmass, charge=82 }
 	lhc2.beam = lhc1.beam -- let sequences share the same beam...
-	
+
 	-- print Pb208 nuclei energy-mass in GeV and unified atomic mass.
 	print(lhcb1.beam.mass, lhcb1.beam.mass/amass)
 

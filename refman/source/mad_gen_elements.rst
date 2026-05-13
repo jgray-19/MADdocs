@@ -11,47 +11,48 @@ Taxonomy
 
 The classes defined by the :var:`element` module are organized according to the kinds and the roles of their instances. The classes defining the kinds are:
 
-**thin**
-	 The *thin* elements have zero-length and their physics does not depend on it, i.e. the attribute :var:`l` is discarded or forced to zero in the physics.
+.. list-table::
+   :widths: 14 86
+   :header-rows: 1
 
-**thick**
-	 The *thick* elements have a length and their physics depends on it. Elements like :var:`sbend`, :var:`rbend`, :var:`quadrupole`, :var:`solenoid`, and :var:`elseparator` trigger a runtime error if they have zero-length. Other thick elements will accept to have zero-length for compatibility with MAD-X [#f1]_ , but their physics will have to be adjusted. [#f2]_ 
-
-**drift**
-	 The *drift* elements have a length with a :literal:`drift`-like physics if :math:`l\geq` :var:`minlen` [#f3]_ otherwise they are discarded or ignored. Any space between elements with a length :math:`l\geq` :var:`minlen` are represented by an :var:`implicit` drift created on need by the :math:`s`-iterator of sequences and discarded afterward.
-
-**patch**
-	 The *patch* elements have zero-length and the purpose of their physics is to change the reference frame.
-
-**extrn**
-	 The *extern* elements are never part of sequences. If they are present in a sequence definition, they are expanded and replaced by their content, i.e. stay external to the lattice.
-
-**specl**
-	 The *special* elements have special roles like *marking* places (i.e. :var:`maker`) or *branching* sequences (i.e. :var:`slink`).
+   * - Kind
+     - Description
+   * - :literal:`thin`
+     - Zero-length; physics does not depend on length (attribute :literal:`l` is discarded or forced to zero).
+   * - :literal:`thick`
+     - Finite-length; physics depends on length. Some elements error at zero length (for example :var:`sbend`, :var:`rbend`, :var:`quadrupole`, :var:`solenoid`, :var:`elseparator`). Others may accept zero length for MAD-X compatibility. [#f1]_ [#f2]_
+   * - :literal:`drift`
+     - Drift-like physics when :math:`l\\geq` :var:`minlen`; otherwise ignored. Gaps between elements are represented by implicit drifts created by the sequence :math:`s`-iterator and discarded after use. [#f3]_
+   * - :literal:`patch`
+     - Zero-length; changes the reference frame.
+   * - :literal:`extrn`
+     - External; never part of sequences. When present in a sequence definition, expanded into its content.
+   * - :literal:`specl`
+     - Special roles such as markers (:var:`marker`) and sequence links (:var:`slink`).
 
 These classes are not supposed to be used directly, except for extending the hierarchy defined by the :var:`element` module and schematically reproduced hereafter to help users understanding:
 
-.. code-block:: lua
-	
+.. code-block:: mad
+
 	thin_element = element  'thin_element' { is_thin    = true }
 	thick_element = element 'thick_element' { is_thick   = true }
 	drift_element = element 'drift_element' { is_drift   = true }
 	patch_element = element 'patch_element' { is_patch   = true }
 	extrn_element = element 'extrn_element' { is_extern  = true }
 	specl_element = element 'specl_element' { is_special = true }
-	
+
 	sequence    = extrn_element 'sequence'    { }
 	assembly    = extrn_element 'assembly'    { }
 	bline       = extrn_element 'bline'       { }
-	
+
 	marker      = specl_element 'marker'      { }
 	slink       = specl_element 'slink'       { }
-	
+
 	drift       = drift_element 'drift'       { }
 	collimator  = drift_element 'collimator'  { }
 	instrument  = drift_element 'instrument'  { }
 	placeholder = drift_element 'placeholder' { }
-	
+
 	sbend       = thick_element 'sbend'       { }
 	rbend       = thick_element 'rbend'       { }
 	quadrupole  = thick_element 'quadrupole'  { }
@@ -65,10 +66,10 @@ These classes are not supposed to be used directly, except for extending the hie
 	elseparator = thick_element 'elseparator' { }
 	rfcavity    = thick_element 'rfcavity'    { }
 	genmap      = thick_element 'genmap'      { }
-	
+
 	beambeam    = thin_element  'beambeam'    { }
 	multipole   = thin_element  'multipole'   { }
-	
+
 	xrotation   = patch_element 'xrotation'   { }
 	yrotation   = patch_element 'yrotation'   { }
 	srotation   = patch_element 'srotation'   { }
@@ -76,15 +77,15 @@ These classes are not supposed to be used directly, except for extending the hie
 	changeref   = patch_element 'changeref'   { }
 	changedir   = patch_element 'changedir'   { }
 	changenrj   = patch_element 'changenrj'   { }
-	
+
 	-- specializations
 	rfmultipole = rfcavity      'rfmultipole' { }
 	crabcavity  = rfmultipole   'crabcavity'  { }
-	
+
 	monitor     = instrument     'monitor'    { }
 	hmonitor    = monitor       'hmonitor'    { }
 	vmonitor    = monitor       'vmonitor'    { }
-	
+
 	kicker      = tkicker        'kicker'     { }
 	hkicker     =  kicker       'hkicker'     { }
 	vkicker     =  kicker       'vkicker'     { }
@@ -92,8 +93,8 @@ These classes are not supposed to be used directly, except for extending the hie
 
 All the classes above, including :var:`element`, define the attributes :expr:`kind = name` and :func:`is_name = true` where :var:`name` correspond to the class name. These attributes help to identify the kind and the role of an element as shown in the following code excerpt:
 
-.. code-block:: lua
-	
+.. code-block:: mad
+
 	local drift, hmonitor, sequence in MAD.element
 	local dft = drift    {}
 	local bpm = hmonitor {}
@@ -145,15 +146,15 @@ The :var:`element` *object* provides the following attributes:
 	 A *string* holding one of :literal:`"entry"`, :literal:`"centre"` or :literal:`"exit"`, or a *number* specifying a position in [m] from the start of the element, all of them resulting in an offset to substract to the :literal:`at` attribute to find the :math:`s`-position of the element entry when inserted in a sequence, see :ref:`element positions <elpos>` for details. (default: :const:`nil` :math:`\equiv` :literal:`seq.refer`).
 
 **aperture**
-	 A *mappable* specifying aperture attributes, see :ref:`Aperture <sec.elm.aper>` for details. 
+	 A *mappable* specifying aperture attributes, see :ref:`Aperture <sec.elm.aper>` for details.
 	 (default: :expr:`{kind='circle', 1}`).
 
 **apertype**
-	 A *string* specifying the aperture type, see :ref:`Aperture <sec.elm.aper>` for details. 
-	 (default: :expr:`\\s -> s.aperture.kind or 'circle'`). [#f4]_ 
+	 A *string* specifying the aperture type, see :ref:`Aperture <sec.elm.aper>` for details.
+	 (default: :expr:`\\s -> s.aperture.kind or 'circle'`). [#f4]_
 
 **misalign**
-	 A *mappable* specifying misalignment attributes, see :ref:`Misalignment <sec.elm.misalign>` for details. 
+	 A *mappable* specifying misalignment attributes, see :ref:`Misalignment <sec.elm.misalign>` for details.
 	 (default: :const:`nil`)
 
 
@@ -390,7 +391,7 @@ The :var:`solenoid` element defines the following attributes:
 Multipole
 """""""""
 
-The :var:`multipole` element is a thin element and defines the following attributes: 
+The :var:`multipole` element is a thin element and defines the following attributes:
 
 **knl, ksl**
 	 A *list* specifying respectively the multipolar and skew integrated strengths of the element [m\ :math:`^{-i+1}`]. (default: :literal:`{}`).
@@ -585,7 +586,7 @@ The :var:`changenrj` element is a patch element and defines the following attrib
 Flags
 -----
 
-The :var:`element` module exposes the following *object* flags through :literal:`MAD.element.flags` to use in conjunction with the methods :literal:`select` and :literal:`deselect`: [#f10]_ 
+The :var:`element` module exposes the following *object* flags through :literal:`MAD.element.flags` to use in conjunction with the methods :literal:`select` and :literal:`deselect`: [#f10]_
 
 **none**
 	 All bits zero.
@@ -611,7 +612,7 @@ The :var:`element` module exposes the following *object* flags through :literal:
 Fringe fields
 -------------
 
-The :var:`element` module exposes the following flags through :literal:`MAD.element.flags.fringe` to *control* the elements fringe fields through their attribute :literal:`fringe`, or to *restrict* the activated fringe fields with the commands attribute :literal:`fringe`: [#f11]_ 
+The :var:`element` module exposes the following flags through :literal:`MAD.element.flags.fringe` to *control* the elements fringe fields through their attribute :literal:`fringe`, or to *restrict* the activated fringe fields with the commands attribute :literal:`fringe`: [#f11]_
 
 **none**
 	 All bits zero.
@@ -698,8 +699,8 @@ The supported aperture shapes are listed hereafter. The parameters defining the 
 
 The following example defines new classes with three different aperture definitions:
 
-.. code-block:: lua
-	
+.. code-block:: mad
+
 	local quadrupole in MAD.element
 	local mq = quadrupole 'mq' { l=1,                               -- new class
 	  aperture = { kind='racetrack',

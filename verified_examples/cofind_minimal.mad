@@ -1,0 +1,29 @@
+local beam, cofind in MAD
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+local mt, mf = cofind {
+  sequence=psb3,
+  X0={{x=1e-6, px=0, y=0, py=0, t=0, pt=0}},
+  save=true,
+  observe=0,
+  coitr=15,
+}
+
+assert(mt["status"], "missing status column")
+assert(mf[1], "missing first closed orbit result")
+assert(mf[1].status == "stable", "closed orbit did not converge")
+assert(mf[1].coitr, "missing iteration count")
+assert(mf[1].rank, "missing solver rank")
+
+local xco = mf[1]:get0()
+
+mt:write("cofind_minimal", {"name", "s", "id", "x", "px", "y", "py", "t", "pt", "status"})
+
+print("closed orbit status=", mf[1].status, "coitr=", mf[1].coitr, "rank=", mf[1].rank)
+xco:print("Xco", 1e-12, "line")

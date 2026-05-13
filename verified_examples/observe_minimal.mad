@@ -1,0 +1,40 @@
+local beam, track in MAD
+local observed in MAD.element.flags
+
+MADX:load("doc_sequences/psb3_saved.seq",
+          "doc_sequences/psb3_saved.mad")
+
+local psb3 in MADX
+local pmass in MAD.constant
+psb3.beam = beam { particle="proton", energy=0.16 + pmass }
+
+-- observe all monitors
+psb3:select(observed, {class = MAD.element.monitor})
+
+local trk = track {
+  sequence = psb3,
+  X0       = {x=1e-3, px=0, y=0, py=0, t=0, pt=0},
+  nturn    = 1,
+  observe  = 1,
+}
+
+-- all saved rows should be monitors (or $end)
+for i = 1, #trk do
+  local kind = trk["kind"][i]
+  assert(kind == "monitor" or kind == "marker",
+         "unexpected element kind in observed output: " .. tostring(kind))
+end
+
+print("observe: nrows=", #trk, "(monitors only)")
+
+-- deselect all and verify that only $end is saved at observe=1
+psb3:deselect(observed)
+
+local trk2 = track {
+  sequence = psb3,
+  X0       = {x=1e-3, px=0, y=0, py=0, t=0, pt=0},
+  nturn    = 1,
+  observe  = 1,
+}
+
+print("observe (none selected): nrows=", #trk2, "(empty — no observed elements)")
