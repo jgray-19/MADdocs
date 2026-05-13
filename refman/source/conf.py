@@ -17,7 +17,7 @@ lexers['mad'] = MadLexer()
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 master_doc = 'index'
-project = 'MAD-NG Reference Manual'
+project = 'MAD-NG Unofficial Reference Manual'
 copyright = '2023, Laurent Deniau'
 author = 'Laurent Deniau'
 version = release = '0.9.7'
@@ -131,7 +131,7 @@ latex_additional_files = ["latex_additional_files/" + x for x in os.listdir("lat
 # -- Options for MAN output -------------------------------------------------
 
 man_pages = [
-    (master_doc, 'MAD-NG Refence Manual', 'MAD-NG man pages',[author], 1),
+    (master_doc, 'MAD-NG Unofficial Reference Manual', 'MAD-NG man pages',[author], 1),
     ("sequences", 'Sequence', 'Object man page',[author], 2),
     ("elemfunc", 'Elementary Constants and Functions', 'Elementary Constants and Functions man page',[author], 3),
     #Continually list to get all, could automate this?

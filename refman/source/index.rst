@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MAD-NG's Reference Manual!
-=====================================
+Welcome to the MAD-NG Unofficial Reference Manual!
+==================================================
 
 .. toctree::
    :maxdepth: 3
