@@ -1,12 +1,16 @@
-import sys, os, sphinx_rtd_theme
-sys.path.append(os.path.abspath("./_ext")) #Add to path here!
+import os
+import sys
+
+import sphinx_rtd_theme
+
+sys.path.append(os.path.abspath("./_ext"))  # Add to path here!
 
 # Configuration file for the Sphinx documentation builder.
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 from pygments_mad_lexer import MadLexer
-
 from sphinx.highlighting import lexers
+
 lexers['mad'] = MadLexer()
 
 # -- Project information -----------------------------------------------------
@@ -23,9 +27,9 @@ version = release = '0.9.7'
 
 primary_domain = "mad" #Use .. default-domain:: c to change to c then .. default-domain:: mad to change back to mad
 extensions = [
-    "customRoles", 
-    "sphinx-mad-domain", 
-    ]
+    "customRoles",
+    "sphinx-mad-domain",
+]
 
 source_suffix = {
     '.rst': 'restructuredtext',
@@ -34,7 +38,7 @@ source_suffix = {
 highlight_language = "mad"
 numfig = True
 numfig_secnum_depth = 2
-# numfig_format - 
+# numfig_format -
 # A dictionary mapping 'figure', 'table', 'code-block' and 'section' to strings that are used for format of figure numbers. As a special character, %s will be replaced to figure number.
 # Default is to use 'Fig. %s' for 'figure', 'Table %s' for 'table', 'Listing %s' for 'code-block' and 'Section %s' for 'section'.
 
@@ -69,9 +73,9 @@ latex_docclass = {
     'howto': 'cernrep'
 }
 latex_elements = {
-    'preamble': '''
+    "preamble": """
     \\usepackage{nameref} % For getting chapter name
-    
+
     \\renewcommand\sphinxtableofcontentshook{}
     \\addto\\captionsenglish{\\renewcommand{\\contentsname}{Table of contents}}
 
@@ -85,10 +89,10 @@ latex_elements = {
     \\titleformat{\\section      }{\\normalfont\\Large\\bfseries}{\\thesection      }{1em}{}
     \\titleformat{\\subsection   }{\\normalfont\\large\\bfseries}{\\thesubsection   }{1em}{}
     \\titleformat{\\subsubsection}{\\normalfont\\large\\bfseries}{\\thesubsubsection}{1em}{}
-    
+
     \\makeatletter
     %Changes headers and footers
-    \\fancypagestyle{normal}{ % After page 3 
+    \\fancypagestyle{normal}{ % After page 3
         \\fancyhf{}
         \\fancyhead[R]{\\thepage}
         \\fancyhead[L]{\\it{\\thechapter . \\MakeUppercase{\\@currentlabelname}}}
@@ -100,11 +104,11 @@ latex_elements = {
         \\fancyhead[R]{\\thepage}
     }
     \\makeatother
-    ''',
-    'fncychap': '',
-    'sphinxsetup':  "InnerLinkColor={rgb}{0,0,1}, OuterLinkColor={rgb}{0,0,1}",#'verbatimwithframe = false', #Remove border around code blocks
-    'tableofcontents': '\\tableofcontents',
-    'maketitle': """
+    """,
+    "fncychap": "",
+    "sphinxsetup": "InnerLinkColor={rgb}{0,0,1}, OuterLinkColor={rgb}{0,0,1}",  #'verbatimwithframe = false', #Remove border around code blocks
+    "tableofcontents": "\\tableofcontents",
+    "maketitle": """
     \\institute{
     Accelerator Beam Physics,\\\\
     CERN, Meyrin, Switzerland.}
@@ -119,7 +123,7 @@ latex_elements = {
     \\keywords{Methodical Accelerator Design; Accelerator beam physics; Scientific computing; JIT compiler; C/C++ and Lua programming.}
 
     \\maketitle""",
-    'extraclassoptions': "oneside"
+    "extraclassoptions": "oneside",
 }
 latex_table_style = ['booktabs']
 latex_additional_files = ["latex_additional_files/" + x for x in os.listdir("latex_additional_files/")]

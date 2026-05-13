@@ -1,9 +1,8 @@
 from docutils import nodes
 from sphinx import addnodes
-from sphinx.locale import _
-from sphinx.domains.c import CDomain, CObject, CXRefRole
 from sphinx.domains import ObjType
-
+from sphinx.domains.c import CDomain, CObject, CXRefRole
+from sphinx.locale import _
 
 #------May be useful in the future--------
 # class CConstObject(CObject):
@@ -31,5 +30,3 @@ def setup(app):
     app.add_role("type", type_role)
 
     return
-    
-

@@ -16,19 +16,21 @@
 """
 
 import re
+from collections.abc import Iterable, Iterator
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
 from sphinx import addnodes
-from sphinx.roles import XRefRole
-from sphinx.domains import Domain, ObjType, Index
-from sphinx.directives import ObjectDescription
-from sphinx.locale import get_translation
-from sphinx.util import logging
-from sphinx.util.nodes import make_refnode
-from sphinx.util.docfields import Field, GroupedField, TypedField
-from sphinx.environment import BuildEnvironment
 from sphinx.builders import Builder
-from typing import Any, Dict, Iterable, Iterator, List, Tuple, Optional, Union
+from sphinx.directives import ObjectDescription
+from sphinx.domains import Domain, Index, ObjType
+from sphinx.environment import BuildEnvironment
+from sphinx.locale import get_translation
+from sphinx.roles import XRefRole
+from sphinx.util import logging
+from sphinx.util.docfields import Field, GroupedField, TypedField
+from sphinx.util.nodes import make_refnode
 
 MESSAGE_CATALOG_NAME = 'sphinx-mad-domain'
 _ = get_translation(MESSAGE_CATALOG_NAME)
