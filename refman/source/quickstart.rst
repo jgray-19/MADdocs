@@ -48,6 +48,14 @@ If you want a concrete starting point from this repo, look in :file:`doc_sequenc
 for saved sequences and translated inputs (for example :file:`sps.seq` /
 :file:`sps.mad`).
 
+If you are reading the published docs and do not have the repository checked
+out locally, fetch these files by cloning the documentation repository:
+
+.. code-block:: console
+
+   $ git clone https://github.com/jgray-19/MADdocs.git
+   $ cd MADdocs
+
 3. Attach a Beam
 ----------------
 

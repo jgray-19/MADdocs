@@ -72,6 +72,16 @@ This repo also ships a few local assets that examples and docs may reference:
 * :file:`verified_examples/` - minimal examples used by the manual via :literalinclude.
 * :file:`refman/source/` - the Sphinx manual sources themselves.
 
+If you are reading the published HTML documentation, these assets are not
+embedded in the rendered site. Fetch them by cloning the documentation
+repository:
+
+.. code-block:: console
+
+   $ git clone https://github.com/jgray-19/MADdocs.git
+   $ cd MADdocs
+   $ ls doc_sequences
+
 Structure
 =========
 
